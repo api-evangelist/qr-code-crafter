@@ -1,0 +1,58 @@
+name: QR Code Crafter
+description: >-
+  Public QR code generation API by Brand Aspect Ltd supporting 27+ payload types (URL, WiFi, vCard, payments) with six
+  export formats, bulk generation, and capability-managed dynamic redirect QR codes. Offers machine-readable OpenAPI,
+  WebMCP browser-agent surface, llms.txt, and ai.txt agent guidance.
+url: https://qr-code-crafter.apievangelist.com/apis.yml
+created: '2026-07-24'
+modified: '2026-07-24'
+specificationVersion: '0.21'
+tags:
+  - QR code
+  - QR code generation
+  - static QR
+  - dynamic QR
+  - dynamic redirects
+  - image export
+  - bulk generation
+  - developer tools
+  - OpenAPI
+  - WebMCP
+  - browser agents
+  - payments (QR)
+apis:
+  - name: QRCodeCrafter API
+    description: >-
+      REST API for generating static and bulk QR codes and managing dynamic URL redirects/vaults with aggregate
+      analytics. Includes an OpenAPI 3.0.1 contract, WebMCP browser-agent context, ai-plugin.json, llms.txt, and ai.txt
+      agent guides.
+    humanURL: https://qrcodecrafter.com/qr-code-api
+    baseURL: https://qrcodecrafter.com
+    tags:
+      - QR code
+      - QR code generation
+      - static QR
+      - dynamic QR
+      - dynamic redirects
+      - image export
+      - bulk generation
+      - developer tools
+      - OpenAPI
+      - WebMCP
+      - browser agents
+      - payments (QR)
+    properties:
+      - type: OpenAPI
+        url: https://qrcodecrafter.com/.well-known/openapi.json
+      - type: Documentation
+        url: https://qrcodecrafter.com/qr-code-api
+      - type: LLMSTxt
+        url: https://qrcodecrafter.com/llms.txt
+maintainers:
+  - FN: QR Code Crafter Agent Support (Brand Aspect Ltd)
+    url: https://qrcodecrafter.com
+generated:
+  by: apis.io/add
+  model: claude-opus-4-8
+  confidence: 95
+  at: '2026-07-24T19:52:32.017Z'
