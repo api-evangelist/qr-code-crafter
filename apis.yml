@@ -5,7 +5,7 @@ description: >-
   WebMCP browser-agent surface, llms.txt, and ai.txt agent guidance.
 url: https://qr-code-crafter.apievangelist.com/apis.yml
 created: '2026-07-24'
-modified: '2026-07-24'
+modified: '2026-08-02'
 specificationVersion: '0.21'
 tags:
   - QR code
@@ -48,6 +48,13 @@ apis:
         url: https://qrcodecrafter.com/qr-code-api
       - type: LLMSTxt
         url: https://qrcodecrafter.com/llms.txt
+common:
+  - type: Website
+    url: https://qrcodecrafter.com
+  - type: Documentation
+    url: https://qrcodecrafter.com/qr-code-api
+  - type: LLMSTxt
+    url: https://qrcodecrafter.com/llms.txt
 maintainers:
   - FN: QR Code Crafter Agent Support (Brand Aspect Ltd)
     url: https://qrcodecrafter.com
