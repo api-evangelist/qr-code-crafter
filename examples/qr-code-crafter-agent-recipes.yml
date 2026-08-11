@@ -1,0 +1,544 @@
+generated: '2026-08-11'
+method: searched
+source: openapi/qr-code-crafter-openapi-original.json#/components/schemas/GenerateQrRequest/x-agent-recipes
+docs: https://qrcodecrafter.com/qr-code-api
+note: Saved verbatim from the provider's own OpenAPI. QR Code Crafter ships 27 named, ready-to-POST request
+  bodies as a vendor extension on the request schema - one per payload type - each with a human label
+  and a bestFormats hint. The same recipe set is exposed in the WebMCP context as api.agentRecipes, so
+  the browser tool surface and the HTTP contract agree. Nothing here is authored by API Evangelist; every
+  value is the provider's published example.
+target_operation: generateQr
+endpoint: POST https://qrcodecrafter.com/.netlify/functions/generate-qr
+recipe_count: 27
+supported_content_types:
+- url
+- appstore
+- social
+- text
+- wifi
+- email
+- sms
+- phone
+- whatsapp
+- vcard
+- event
+- location
+- crypto
+- pix
+- upi
+- phonepe
+- swish
+- sepa
+- ideal
+- mobilepayvipps
+- qris
+- paypal
+- venmo
+- cashapp
+- promptpay
+- vietqr
+- swissqr
+recipes:
+  url:
+    label: Campaign landing page
+    bestFormats:
+    - svg
+    - pdf
+    - png
+    request:
+      value: https://example.com/path?utm_source=qr&utm_medium=print&utm_campaign=spring
+      format: svg
+      size: 1024
+      margin: 4
+      fgColor: '#111111'
+      bgColor: '#ffffff'
+      errorCorrectionLevel: H
+  appstore:
+    label: App download page
+    bestFormats:
+    - svg
+    - png
+    - pdf
+    request:
+      value: https://apps.apple.com/app/id1234567890?pt=123456&ct=qr_campaign&mt=8
+      format: svg
+      size: 1024
+      margin: 4
+      fgColor: '#111111'
+      bgColor: '#ffffff'
+      errorCorrectionLevel: H
+  social:
+    label: Social profile
+    bestFormats:
+    - png
+    - svg
+    - webp
+    request:
+      value: https://www.instagram.com/qrcodecrafter
+      format: png
+      size: 1024
+      margin: 4
+      fgColor: '#111111'
+      bgColor: '#ffffff'
+      errorCorrectionLevel: H
+  text:
+    label: Public text note
+    bestFormats:
+    - png
+    - svg
+    - webp
+    request:
+      value: 'Order #A-12345 | Table 7 | Save 15% with code QR15.'
+      format: png
+      size: 1024
+      margin: 4
+      fgColor: '#111111'
+      bgColor: '#ffffff'
+      errorCorrectionLevel: H
+  wifi:
+    label: Guest Wi-Fi login
+    bestFormats:
+    - svg
+    - png
+    - pdf
+    request:
+      value: WIFI:T:WPA;S:Guest Network;P:Welcome123;H:false;;
+      format: svg
+      size: 1024
+      margin: 4
+      fgColor: '#111111'
+      bgColor: '#ffffff'
+      errorCorrectionLevel: H
+  email:
+    label: Prefilled email action
+    bestFormats:
+    - svg
+    - png
+    - jpg
+    request:
+      value: mailto:support@example.com?subject=QR%20support&body=Please%20contact%20me
+      format: svg
+      size: 1024
+      margin: 4
+      fgColor: '#111111'
+      bgColor: '#ffffff'
+      errorCorrectionLevel: H
+  sms:
+    label: Prefilled SMS action
+    bestFormats:
+    - svg
+    - png
+    - jpg
+    request:
+      value: SMSTO:+15551234567:QR smoke test
+      format: svg
+      size: 1024
+      margin: 4
+      fgColor: '#111111'
+      bgColor: '#ffffff'
+      errorCorrectionLevel: H
+  phone:
+    label: Tap-to-call phone number
+    bestFormats:
+    - svg
+    - png
+    - jpg
+    request:
+      value: tel:+15551234567
+      format: svg
+      size: 1024
+      margin: 4
+      fgColor: '#111111'
+      bgColor: '#ffffff'
+      errorCorrectionLevel: H
+  whatsapp:
+    label: WhatsApp chat link
+    bestFormats:
+    - png
+    - svg
+    - webp
+    request:
+      value: https://wa.me/15551234567?text=QR%20smoke%20test
+      format: png
+      size: 1024
+      margin: 4
+      fgColor: '#111111'
+      bgColor: '#ffffff'
+      errorCorrectionLevel: H
+  vcard:
+    label: Contact card
+    bestFormats:
+    - pdf
+    - svg
+    - png
+    request:
+      value: 'BEGIN:VCARD
+
+        VERSION:3.0
+
+        FN:Jordan Smith
+
+        TEL:+15558675309
+
+        EMAIL:hello@example.com
+
+        END:VCARD'
+      format: pdf
+      size: 1024
+      margin: 4
+      fgColor: '#111111'
+      bgColor: '#ffffff'
+      errorCorrectionLevel: H
+  event:
+    label: Calendar invite
+    bestFormats:
+    - svg
+    - png
+    - pdf
+    request:
+      value: 'BEGIN:VCALENDAR
+
+        VERSION:2.0
+
+        BEGIN:VEVENT
+
+        SUMMARY:Product Demo
+
+        DTSTART:20300601T100000
+
+        DTEND:20300601T110000
+
+        LOCATION:Online
+
+        URL:https://example.com/demo
+
+        END:VEVENT
+
+        END:VCALENDAR'
+      format: svg
+      size: 1024
+      margin: 4
+      fgColor: '#111111'
+      bgColor: '#ffffff'
+      errorCorrectionLevel: H
+  location:
+    label: Map location
+    bestFormats:
+    - png
+    - svg
+    - pdf
+    request:
+      value: geo:37.422,-122.084?q=1600%20Amphitheatre%20Parkway
+      format: png
+      size: 1024
+      margin: 4
+      fgColor: '#111111'
+      bgColor: '#ffffff'
+      errorCorrectionLevel: H
+  crypto:
+    label: Bitcoin payment URI
+    bestFormats:
+    - svg
+    - png
+    - pdf
+    request:
+      value: bitcoin:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080?amount=0.01
+      format: svg
+      size: 1024
+      margin: 4
+      fgColor: '#111111'
+      bgColor: '#ffffff'
+      errorCorrectionLevel: H
+  pix:
+    label: Brazil PIX payment
+    bestFormats:
+    - eps
+    - pdf
+    - png
+    request:
+      value: 00020101021126510014BR.GOV.BCB.PIX0117smoke@example.com0208SMOKE12352040000530398654041.235802BR5910SMOKE
+        TEST6009SAO PAULO62120508SMOKE12363047B22
+      format: eps
+      size: 1024
+      margin: 4
+      fgColor: '#111111'
+      bgColor: '#ffffff'
+      errorCorrectionLevel: H
+  upi:
+    label: India UPI payment
+    bestFormats:
+    - pdf
+    - svg
+    - png
+    request:
+      value: upi://pay?pa=merchant@upi&pn=Merchant&am=10.00&cu=INR&tn=Invoice
+      format: pdf
+      size: 1024
+      margin: 4
+      fgColor: '#111111'
+      bgColor: '#ffffff'
+      errorCorrectionLevel: H
+  phonepe:
+    label: PhonePe-compatible UPI payment
+    bestFormats:
+    - pdf
+    - svg
+    - png
+    request:
+      value: upi://pay?pa=phonepe-merchant@upi&pn=PhonePe%20Merchant&am=10.00&cu=INR&tn=Invoice
+      format: pdf
+      size: 1024
+      margin: 4
+      fgColor: '#111111'
+      bgColor: '#ffffff'
+      errorCorrectionLevel: H
+  swish:
+    label: Sweden Swish payment
+    bestFormats:
+    - pdf
+    - svg
+    - png
+    request:
+      value: C1234567890;125,50;Invoice%20123;0
+      format: pdf
+      size: 1024
+      margin: 4
+      fgColor: '#111111'
+      bgColor: '#ffffff'
+      errorCorrectionLevel: H
+  sepa:
+    label: SEPA credit transfer payment
+    bestFormats:
+    - pdf
+    - svg
+    - png
+    request:
+      value: 'BCD
+
+        002
+
+        1
+
+        SCT
+
+        COBADEFFXXX
+
+        Smoke Test GmbH
+
+        DE89370400440532013000
+
+        EUR49.90
+
+
+        INV-2026-001'
+      format: pdf
+      size: 1024
+      margin: 4
+      fgColor: '#111111'
+      bgColor: '#ffffff'
+      errorCorrectionLevel: H
+  ideal:
+    label: iDEAL provider payment link
+    bestFormats:
+    - svg
+    - png
+    - pdf
+    request:
+      value: https://pay.example.nl/ideal/invoice-2026-001
+      format: svg
+      size: 1024
+      margin: 4
+      fgColor: '#111111'
+      bgColor: '#ffffff'
+      errorCorrectionLevel: H
+  mobilepayvipps:
+    label: MobilePay/Vipps provider payment link
+    bestFormats:
+    - svg
+    - png
+    - pdf
+    request:
+      value: https://pay.example.com/mobilepay-vipps/invoice-2026-001
+      format: svg
+      size: 1024
+      margin: 4
+      fgColor: '#111111'
+      bgColor: '#ffffff'
+      errorCorrectionLevel: H
+  qris:
+    label: QRIS supporting payment link
+    bestFormats:
+    - svg
+    - png
+    - pdf
+    request:
+      value: https://merchant.example.co.id/qris/invoice-2026-001
+      format: svg
+      size: 1024
+      margin: 4
+      fgColor: '#111111'
+      bgColor: '#ffffff'
+      errorCorrectionLevel: H
+  paypal:
+    label: PayPal.Me payment link
+    bestFormats:
+    - svg
+    - png
+    - pdf
+    request:
+      value: https://paypal.me/qrcodecrafter/25USD
+      format: svg
+      size: 1024
+      margin: 4
+      fgColor: '#111111'
+      bgColor: '#ffffff'
+      errorCorrectionLevel: H
+  venmo:
+    label: Venmo profile link
+    bestFormats:
+    - svg
+    - png
+    - pdf
+    request:
+      value: https://venmo.com/u/qrcodecrafter
+      format: svg
+      size: 1024
+      margin: 4
+      fgColor: '#111111'
+      bgColor: '#ffffff'
+      errorCorrectionLevel: H
+  cashapp:
+    label: Cash App $Cashtag link
+    bestFormats:
+    - svg
+    - png
+    - pdf
+    request:
+      value: https://cash.app/$qrcodecrafter
+      format: svg
+      size: 1024
+      margin: 4
+      fgColor: '#111111'
+      bgColor: '#ffffff'
+      errorCorrectionLevel: H
+  promptpay:
+    label: Thai PromptPay payment payload
+    bestFormats:
+    - svg
+    - png
+    - pdf
+    request:
+      value: 00020101021229370016A000000677010111011300668123456785802TH53037645406125.5063047652
+      format: svg
+      size: 1024
+      margin: 4
+      fgColor: '#111111'
+      bgColor: '#ffffff'
+      errorCorrectionLevel: H
+  vietqr:
+    label: Vietnam VietQR bank transfer payload
+    bestFormats:
+    - svg
+    - png
+    - pdf
+    request:
+      value: 00020101021238560010A0000007270126000697041501121133666688880208QRIBFTTA530370454061500005802VN62100806INV123630421F5
+      format: svg
+      size: 1024
+      margin: 4
+      fgColor: '#111111'
+      bgColor: '#ffffff'
+      errorCorrectionLevel: H
+  swissqr:
+    label: Swiss QR-bill structured-address payment payload
+    bestFormats:
+    - pdf
+    - svg
+    - eps
+    request:
+      value: 'SPC
+
+        0200
+
+        1
+
+        CH9300762011623852957
+
+        S
+
+        Robert Schneider AG
+
+        Rue du Lac
+
+        1268
+
+        2501
+
+        Biel
+
+        CH
+
+
+
+
+
+
+
+
+        199.95
+
+        CHF
+
+
+
+
+
+
+
+
+        NON
+
+
+        Invoice 2026-001
+
+        EPD
+
+
+
+        '
+      format: pdf
+      size: 1024
+      margin: 4
+      fgColor: '#111111'
+      bgColor: '#ffffff'
+      errorCorrectionLevel: H
+payload_patterns:
+  url: https://example.com/path?utm_source=qr&utm_medium=print
+  appstore: https://apps.apple.com/app/id1234567890
+  social: https://www.instagram.com/qrcodecrafter
+  text: Short public text only
+  wifi: WIFI:T:WPA;S:Network Name;P:Password;H:false;;
+  email: mailto:hello@example.com?subject=Subject&body=Message
+  sms: SMSTO:+15551234567:Message
+  phone: tel:+15551234567
+  whatsapp: https://wa.me/15551234567?text=Message
+  vcard: BEGIN:VCARD\nVERSION:3.0\nFN:Name\nTEL:+15551234567\nEMAIL:hello@example.com\nEND:VCARD
+  event: BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:Event\nDTSTART:20300601T100000\nEND:VEVENT\nEND:VCALENDAR
+  location: geo:37.422,-122.084?q=1600%20Amphitheatre%20Parkway
+  crypto: bitcoin:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080?amount=0.01
+  pix: 00020101021126510014BR.GOV.BCB.PIX0117smoke@example.com0208SMOKE12352040000530398654041.235802BR5910SMOKE
+    TEST6009SAO PAULO62120508SMOKE12363047B22
+  upi: upi://pay?pa=merchant@upi&pn=Merchant&am=10.00&cu=INR
+  phonepe: upi://pay?pa=phonepe-merchant@upi&pn=PhonePe%20Merchant&am=10.00&cu=INR&tn=Invoice
+  swish: C1234567890;125,50;Invoice%20123;0
+  sepa: BCD\n002\n1\nSCT\nCOBADEFFXXX\nSmoke Test GmbH\nDE89370400440532013000\nEUR49.90\n\nINV-2026-001
+  ideal: https://pay.example.nl/ideal/invoice-2026-001
+  mobilepayvipps: https://pay.example.com/mobilepay-vipps/invoice-2026-001
+  qris: https://merchant.example.co.id/qris/invoice-2026-001
+  paypal: https://paypal.me/qrcodecrafter/25USD
+  venmo: https://venmo.com/u/qrcodecrafter
+  cashapp: https://cash.app/$qrcodecrafter
+  promptpay: 00020101021229370016A000000677010111011300668123456785802TH53037645406125.5063047652
+  vietqr: 00020101021238560010A0000007270126000697041501121133666688880208QRIBFTTA530370454061500005802VN62100806INV123630421F5
+  swissqr: SPC\n0200\n1\nCH9300762011623852957\nS\nRobert Schneider AG\nRue du Lac\n1268\n2501\nBiel\nCH\n\n\n\n\n\n\n\n199.95\nCHF\n\n\n\n\n\n\n\nNON\n\nInvoice
+    2026-001\nEPD\n\n\n

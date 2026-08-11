@@ -1,11 +1,17 @@
 name: QR Code Crafter
 description: >-
-  Public QR code generation API by Brand Aspect Ltd supporting 27+ payload types (URL, WiFi, vCard, payments) with six
-  export formats, bulk generation, and capability-managed dynamic redirect QR codes. Offers machine-readable OpenAPI,
-  WebMCP browser-agent surface, llms.txt, and ai.txt agent guidance.
+  Public QR code generation API by Brand Aspect Ltd (England & Wales, company 05105266) supporting 27 payload types —
+  URL, GS1 Digital Link, Wi-Fi, vCard, event, location, crypto and fifteen payment schemes including PIX, UPI,
+  PromptPay, VietQR, Swiss QR-bill and SEPA/GiroCode — exported as SVG, PNG, JPG, WebP, PDF or EPS at up to 4096px.
+  Adds bounded bulk ZIP generation (50 rows with a manifest), a generate-and-verify endpoint that decodes the finished
+  asset and returns an evidence receipt, and capability-managed dynamic URL redirects and vaults with privacy-preserving
+  aggregate counts and no accounts or visitor tracking. Unusually agent-native for its size: it self-publishes an
+  APIs.json index, OpenAPI 3.0.1 in both JSON and YAML, an ai-plugin manifest, a WebMCP browser-agent context with eight
+  tool schemas, llms.txt, ai.txt, an Atom change feed for agents, and Markdown variants of every public page.
 url: https://qr-code-crafter.apievangelist.com/apis.yml
+image: https://qrcodecrafter.com/icons/icon-512x512.png
 created: '2026-07-24'
-modified: '2026-08-02'
+modified: '2026-08-11'
 specificationVersion: '0.21'
 tags:
   - QR code
@@ -20,6 +26,9 @@ tags:
   - WebMCP
   - browser agents
   - payments (QR)
+  - agent readiness
+  - llms.txt
+  - capability tokens
 apis:
   - name: QRCodeCrafter API
     description: >-
@@ -44,22 +53,93 @@ apis:
     properties:
       - type: OpenAPI
         url: https://qrcodecrafter.com/.well-known/openapi.json
+      - type: OpenAPI
+        url: openapi/qr-code-crafter-openapi-original.json
       - type: Documentation
         url: https://qrcodecrafter.com/qr-code-api
-      - type: LLMSTxt
+      - type: APIReference
+        url: https://qrcodecrafter.com/openapi.yaml
+      - type: LLMsTxt
         url: https://qrcodecrafter.com/llms.txt
+      - type: WebMCP
+        url: https://qrcodecrafter.com/.well-known/webmcp.json
+      - type: ToolCrosswalk
+        url: mcp/qr-code-crafter-tool-crosswalk.yml
+      - type: Overlay
+        url: overlays/qr-code-crafter-openapi-overlay.yaml
+      - type: DataModel
+        url: data-model/qr-code-crafter-data-model.yml
 common:
   - type: Website
     url: https://qrcodecrafter.com
   - type: Documentation
     url: https://qrcodecrafter.com/qr-code-api
-  - type: LLMSTxt
+  - type: APIReference
+    url: https://qrcodecrafter.com/openapi.yaml
+  - type: Pricing
+    url: https://qrcodecrafter.com/qr-code-api-pricing
+  - type: TermsOfService
+    url: https://qrcodecrafter.com/terms
+  - type: PrivacyPolicy
+    url: https://qrcodecrafter.com/privacy
+  - type: Support
+    url: mailto:support@qrcodecrafter.com
+  - type: HelpCenter
+    url: https://qrcodecrafter.com/faq
+  - type: LLMsTxt
     url: https://qrcodecrafter.com/llms.txt
+  - type: LLMsTxt
+    url: llms/qr-code-crafter-llms.txt
+  - type: WebMCP
+    url: mcp/qr-code-crafter-mcp.yml
+  - type: AgentSkill
+    url: skills/_index.yml
+  - type: AgenticAccess
+    url: agentic-access/qr-code-crafter-agentic-access.yml
+  - type: WellKnown
+    url: well-known/qr-code-crafter-well-known.yml
+  - type: Authentication
+    url: authentication/qr-code-crafter-authentication.yml
+  - type: Conventions
+    url: conventions/qr-code-crafter-conventions.yml
+  - type: Idempotency
+    url: conventions/qr-code-crafter-conventions.yml
+  - type: ErrorCatalog
+    url: errors/qr-code-crafter-problem-types.yml
+  - type: RateLimits
+    url: rate-limits/qr-code-crafter-rate-limits.yml
+  - type: Plans
+    url: plans/qr-code-crafter-plans-pricing.yml
+  - type: Lifecycle
+    url: lifecycle/qr-code-crafter-lifecycle.yml
+  - type: ChangeLog
+    url: changelog/qr-code-crafter-changelog.yml
+  - type: ChangeLog
+    url: https://qrcodecrafter.com/feeds/agent-updates.xml
+  - type: Conformance
+    url: conformance/qr-code-crafter-conformance.yml
+  - type: Examples
+    url: examples/qr-code-crafter-agent-recipes.yml
+  - type: Sandbox
+    url: sandbox/qr-code-crafter-sandbox.yml
+  - type: Packages
+    url: packages/qr-code-crafter-packages.yml
+  - type: DomainSecurity
+    url: security/qr-code-crafter-domain-security.yml
+  - type: APIsJSON
+    url: https://qrcodecrafter.com/apis.json
 maintainers:
-  - FN: QR Code Crafter Agent Support (Brand Aspect Ltd)
-    url: https://qrcodecrafter.com
+  - FN: QR Code Crafter Agent Support
+    email: support@qrcodecrafter.com
+    org: Brand Aspect Ltd
+    url: https://qrcodecrafter.com/imprint
 generated:
   by: apis.io/add
   model: claude-opus-4-8
   confidence: 95
   at: '2026-07-24T19:52:32.017Z'
+x-enrichment:
+  date: '2026-08-11'
+  status: enriched
+  artifacts_added: 29
+  pass: local-v1

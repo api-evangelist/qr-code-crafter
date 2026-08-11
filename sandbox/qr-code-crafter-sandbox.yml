@@ -1,0 +1,87 @@
+generated: '2026-08-11'
+method: searched
+source: https://qrcodecrafter.com/qr-code-readability-lab
+docs:
+  - https://qrcodecrafter.com/qr-code-readability-lab
+  - https://qrcodecrafter.com/qr-code-safety-lab
+  - https://qrcodecrafter.com/qr-code-api
+test_live_separation:
+  modes: none
+  key_prefixes: none
+  note: >-
+    There is NO separate sandbox environment and no test-vs-live key split, because there is nothing to
+    separate: generation is free, unauthenticated, stateless and non-billable, so production IS the test
+    environment. The one place where a mistake is expensive — creating a dynamic redirect — has no test
+    mode either, and a created record counts against the 100,000 active-record capacity. An agent
+    rehearsing a dynamic-QR flow should expect to create and then delete real records.
+console:
+  available: true
+  kind: interactive-generator-forms
+  urls:
+    - https://qrcodecrafter.com/url
+    - https://qrcodecrafter.com/bulk-qr-code-generator
+    - https://qrcodecrafter.com/dynamic-qr-code
+    - https://qrcodecrafter.com/qr-code-readability-lab
+  note: >-
+    The visible generator forms are a genuine playground for the API's own operations — each is a
+    server-rendered form[toolname=...] wired to the same endpoint an HTTP client calls, so a developer
+    can exercise generateQr, generateBulkQr, generateVerifiedQr and createDynamicQr in a browser with no
+    account and no key. The Readability Lab hosts the distinctive visible generate_verified_qr workflow.
+    This is a product UI doing double duty as an API console, not a dedicated developer console.
+fixtures:
+  available: true
+  name: QR Code Readability Benchmark v1
+  count: 21
+  published: '2026-07-22'
+  description: >-
+    Controlled PNG, JPG, WebP and rendered-SVG export fixtures with exact-decode results — the closest
+    thing this provider ships to canonical test data. Every artifact is checksummed and there is a
+    pinned Node.js reproducer that regenerates and verifies all eight published v1 artifacts without
+    access to the private application repository.
+  artifacts:
+    - kind: results
+      url: https://qrcodecrafter.com/data/qr-readability-lab-v1.json
+      note: Machine-readable exact-decode results.
+    - kind: release
+      url: https://qrcodecrafter.com/data/qr-readability-lab-v1-release.zip
+    - kind: fixtures
+      url: https://qrcodecrafter.com/data/qr-readability-lab-v1-fixtures.zip
+    - kind: checksums
+      url: https://qrcodecrafter.com/data/qr-readability-lab-v1-manifest.json
+    - kind: reproducer
+      url: https://qrcodecrafter.com/data/qr-readability-lab-v1-reproducer.zip
+    - kind: reproducer-checksums
+      url: https://qrcodecrafter.com/data/qr-readability-lab-v1-reproducer-manifest.json
+    - kind: methodology
+      url: https://qrcodecrafter.com/data/qr-readability-lab-methodology-v1.md
+test_values:
+  note: >-
+    No magic test identifiers exist — there are no test cards, test IBANs or reserved numbers, because
+    the API never contacts a payment scheme. It produces a QR ASSET from a payload string; the payload
+    is never transacted. The provider's published agent recipes double as safe example payloads and are
+    captured verbatim in examples/qr-code-crafter-agent-recipes.yml (27 of them, one per payload type,
+    all using example.com / documentation-range values).
+  see: examples/qr-code-crafter-agent-recipes.yml
+tooling:
+  - name: live smoke test
+    kind: provider-operated
+    description: >-
+      Fetches the deployed OpenAPI/WebMCP discovery files, builds payloads from the published agent
+      recipes, and exercises all 27 payload types across all six formats — verifying status codes,
+      content type or file signature, decoded byte length, response metadata and rendered dimensions.
+      For SVG, PNG, JPG and WebP it rasterizes and decodes with jsQR to confirm the scanned payload
+      matches the requested value.
+    note: Described in ai.txt; the runner itself is not published.
+  - name: 'npm run test:local-webmcp'
+    kind: provider-operated
+    description: Validates production-build WebMCP discovery locally before live Netlify checks.
+    note: Referenced in llms.txt; the script lives in a repository that is not publicly linked.
+toggles:
+  - name: '?webmcp=on'
+    description: Forces the Chrome WebMCP Origin-Trial header for testing agentic browsing.
+  - name: '?webmcp=off'
+    description: Omits the trial header while retaining declarative forms, schemas, manifests and API access.
+  - name: 'Accept: text/markdown'
+    description: >-
+      Returns any public content page as stripped Markdown with X-Markdown-Tokens and a Content-Signal
+      header — verified live on the pricing and API docs pages.

@@ -1,0 +1,106 @@
+generated: '2026-08-11'
+method: derived
+source: >-
+  Derived by aligning the provider-published WebMCP tool list
+  (https://qrcodecrafter.com/.well-known/webmcp.json, captured in mcp/qr-code-crafter-mcp.yml) with the
+  provider-published OpenAPI 3.0.1 at openapi/qr-code-crafter-openapi-original.json (19 operations).
+purpose: >-
+  Bind each browser-agent tool to the REST operation(s) that back it, so a tool inherits a real
+  inputSchema from the spec rather than a guessed one. QR Code Crafter is an unusual case: the WebMCP
+  surface and the REST surface are near-congruent projections of the same functions — every tool has a
+  real backing operation and there are no MCP-only tools. The divergence runs the other way: several
+  REST operations have no tool.
+surfaces:
+  rest_openapi: openapi/qr-code-crafter-openapi-original.json  # 19 operations, 34 schemas, not gated
+  webmcp: https://qrcodecrafter.com/.well-known/webmcp.json    # context document public (200); tools register in-page, not over JSON-RPC
+  mcp: null                                                     # no hosted MCP server — /mcp and /.well-known/mcp.json both 404
+  graphql: null                                                 # no GraphQL surface published
+crosswalk:
+  - tool: generate_qr
+    category: generation
+    rest: [generateQr, downloadQr]
+    binding: rest
+    confidence: high
+    note: >-
+      POST /.netlify/functions/generate-qr for JSON (base64 data + dataUrl); GET the same path for
+      direct binary. Both are the documented backing operations for this tool.
+  - tool: generate_verified_qr
+    category: generation
+    rest: [generateVerifiedQr]
+    binding: rest
+    confidence: high
+    note: One-to-one with POST /.netlify/functions/generate-verified-qr.
+  - tool: generate_bulk_qr
+    category: generation
+    rest: [generateBulkQr]
+    binding: rest
+    confidence: high
+    note: One-to-one with POST /.netlify/functions/generate-qr-bulk; 50-row cap on both sides.
+  - tool: create_dynamic_qr
+    category: dynamic-redirects
+    rest: [createDynamicQr]
+    binding: rest
+    confidence: high
+  - tool: manage_dynamic_qr
+    category: dynamic-redirects
+    rest: [getDynamicQr, updateDynamicQr, deleteDynamicQr]
+    binding: rest
+    confidence: high
+    note: >-
+      One tool fans out across three REST operations — read, update/pause/resume/rotate, and delete —
+      selected by the tool's action argument. All three require the DynamicQrBearer capability token
+      plus If-Match / X-Dynamic-QR-Version on writes.
+  - tool: create_qr_vault
+    category: vaults
+    rest: [createDynamicQrVault]
+    binding: rest
+    confidence: high
+  - tool: manage_qr_vault
+    category: vaults
+    rest:
+      - getDynamicQrVault
+      - updateDynamicQrVault
+      - deleteDynamicQrVault
+      - createDynamicQrVaultChild
+      - updateDynamicQrVaultChild
+      - getDynamicQrVaultChildAnalytics
+      - deleteDynamicQrVaultChild
+    binding: rest
+    confidence: high
+    note: >-
+      The widest fan-out in the crosswalk: one tool covers the whole vault surface (rename, delete,
+      child create/update/pause/resume/delete, aggregate analytics read). The tool document carries an
+      actionValidation block, which is the provider's own dispatch table for this fan-out.
+  - tool: create_dynamic_qr_campaign
+    category: dynamic-redirects
+    rest: [createDynamicQr]
+    binding: rest
+    confidence: high
+    note: >-
+      Composite: up to five sequential POSTs to /api/dynamic-qr with no automatic retry, returning one
+      private partial-success manifest. There is no single REST endpoint for the campaign — the
+      composition is client-side, which the provider states explicitly in webmcp.json api.campaign and
+      in the OpenAPI x-agent-workflows.dynamicQrCampaign extension.
+mcp_only: []
+rest_only:
+  - operations: [sendFeedback]
+    capability: feedback
+    reason: >-
+      Human feedback submission (POST /api/send-feedback). No agent tool is registered for it, which
+      is a deliberate choice rather than a gap.
+  - operations: [redirectDynamicQr, headDynamicQr]
+    capability: redirect-runtime
+    reason: >-
+      The public scan-time redirect (GET/HEAD /r/{slug}). It is the runtime consumer surface, not an
+      authoring operation, so no tool wraps it.
+coverage:
+  tools_named: 8
+  tools_bound: 8
+  mcp_only: 0
+  rest_operations_total: 19
+  rest_operations_with_a_tool: 16
+  rest_operations_without_a_tool: 3
+  note: >-
+    Full tool→REST binding with zero unbacked tools is rare in the catalog; the two surfaces were
+    generated from the same source of truth, and the OpenAPI carries an x-agent-workflows extension
+    that names the runtime tools directly.

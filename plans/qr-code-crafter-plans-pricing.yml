@@ -1,0 +1,57 @@
+generated: '2026-08-11'
+method: searched
+source: https://qrcodecrafter.com/qr-code-api-pricing
+docs: https://qrcodecrafter.com/qr-code-api-pricing
+currency: null
+plan_count: 1
+billing:
+  model: free
+  metering: none
+  accounts_required: false
+  note: >-
+    QR Code Crafter publishes a pricing page but sells nothing on it. There is no paid tier, no
+    subscription, no metered billing, no account and no card capture anywhere on the site — the page
+    exists to explain the free public API's limits and to tell a reader when they should go buy a
+    paid dynamic-QR platform instead. plan_count is 1 because there is exactly one real offer (free
+    public access), not because a paid tier was hidden behind a sales gate.
+plans:
+  - name: Free public API
+    price: 0
+    currency: null
+    period: null
+    signup_required: false
+    included:
+      - Static QR generation for 27+ payload types
+      - Six export formats — SVG, PNG, JPG, WebP, PDF, EPS — at sizes up to 4096px
+      - Colors, error-correction level, quiet-zone margin, and embedded logo
+      - Bulk ZIP generation up to 50 rows per request, with manifest.csv and manifest.json
+      - Generate-and-verify with decode receipt for SVG, PNG, JPG and WebP
+      - Privacy-first dynamic URL redirects with capability-token management
+      - Capability-managed vaults (up to 50 child records) with aggregate scan counts
+    limits:
+      rate_limit: Cost-weighted soft budget per client — see rate-limits/qr-code-crafter-rate-limits.yml
+      bulk_rows: 50
+      active_dynamic_records: 100000
+      analytics_retention_days: 90
+    overage: none
+    note: >-
+      Scans are never metered. A static QR file keeps working after download with no dependency on
+      QR Code Crafter staying online.
+api_keys:
+  paid: false
+  note: >-
+    An optional issued X-Agent-Api-Key exists but the provider is explicit that it is "optional, not
+    a paywall" — public access continues to work unless an administrator enables key enforcement for
+    a deployment, and a key may raise the cost budget when it is. Keys are requested by contacting
+    support, not purchased.
+enterprise:
+  available: false
+  note: >-
+    The pricing page has no "contact sales" path. It instead recommends a competing paid dynamic-QR
+    provider, or self-hosting, for anyone who needs editable destinations, pre-load scan analytics,
+    team governance, an SLA, or contracted volume guarantees. That is an unusually candid position
+    and worth recording as-is.
+x-evidence:
+  - url: https://qrcodecrafter.com/qr-code-api-pricing
+    http_status: 200
+    fetched: '2026-08-11'

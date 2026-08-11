@@ -1,0 +1,19 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "QRCodeCrafter",
+  "name_for_model": "qrcode_crafter",
+  "description_for_human": "Generate branded QR codes for links, WiFi, events, and more in vector or raster formats.",
+  "description_for_model": "Comprehensive QR code generation API supporting PNG, JPG, WebP, SVG, PDF, and EPS outputs with color and logo customization. Include an optional X-Agent-Api-Key header when one has been provisioned.",
+  "auth": {
+    "type": "none"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "https://qrcodecrafter.com/.well-known/openapi.json",
+    "is_user_authenticated": false
+  },
+  "logo_url": "https://qrcodecrafter.com/qr-code-icon.svg",
+  "contact_email": "support@qrcodecrafter.com",
+  "legal_info_url": "https://qrcodecrafter.com/terms",
+  "x-webmcp-context-url": "https://qrcodecrafter.com/.well-known/webmcp.json"
+}

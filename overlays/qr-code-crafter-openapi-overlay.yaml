@@ -1,0 +1,111 @@
+overlay: 1.0.0
+info:
+  title: API Evangelist enhancements for QRCodeCrafter API
+  version: 1.0.0
+x-generated: '2026-08-11'
+x-method: generated
+x-source: openapi/qr-code-crafter-openapi-original.json
+x-note: >-
+  Non-destructive enhancement layer over the provider's own OpenAPI. The harvested document is never
+  mutated. These actions add the tags the spec omits (it declares none, and no operation is tagged),
+  link the artifacts this pass produced, and record the two content gaps found — no request/response
+  examples anywhere in the document, and no top-level security requirement even though three
+  securitySchemes are defined.
+extends: openapi/qr-code-crafter-openapi-original.json
+actions:
+  - target: $.info
+    update:
+      x-apievangelist-profile: https://apis.io/provider/qr-code-crafter/
+      x-apievangelist-reviewed: '2026-08-11'
+      x-apievangelist-artifacts:
+        conventions: conventions/qr-code-crafter-conventions.yml
+        errors: errors/qr-code-crafter-problem-types.yml
+        authentication: authentication/qr-code-crafter-authentication.yml
+        rate_limits: rate-limits/qr-code-crafter-rate-limits.yml
+        lifecycle: lifecycle/qr-code-crafter-lifecycle.yml
+        data_model: data-model/qr-code-crafter-data-model.yml
+        tool_crosswalk: mcp/qr-code-crafter-tool-crosswalk.yml
+        skills: skills/_index.yml
+  - target: $
+    update:
+      tags:
+        - name: generation
+          description: Stateless static QR asset generation across six export formats.
+        - name: verification
+          description: Generate an asset, decode it, and return an evidence receipt.
+        - name: bulk
+          description: Bounded ZIP batches of up to 50 static QR files with a manifest.
+        - name: dynamic-redirects
+          description: Capability-managed editable HTTPS redirects.
+        - name: vaults
+          description: Capability-managed containers for up to 50 dynamic QR records.
+        - name: redirect-runtime
+          description: The public scan-time redirect surface.
+        - name: feedback
+          description: Human feedback submission.
+  - target: $.paths['/.netlify/functions/generate-qr'].get
+    update:
+      tags: [generation]
+  - target: $.paths['/.netlify/functions/generate-qr'].post
+    update:
+      tags: [generation]
+  - target: $.paths['/.netlify/functions/generate-verified-qr'].post
+    update:
+      tags: [verification]
+  - target: $.paths['/.netlify/functions/generate-qr-bulk'].post
+    update:
+      tags: [bulk]
+  - target: $.paths['/api/send-feedback'].post
+    update:
+      tags: [feedback]
+  - target: $.paths['/api/dynamic-qr'].post
+    update:
+      tags: [dynamic-redirects]
+      x-apievangelist-note: >-
+        No idempotency key. A retried create produces a second redirect; the provider documents this
+        by instructing agents not to auto-retry a campaign row.
+  - target: $.paths['/api/dynamic-qr/{slug}'].get
+    update:
+      tags: [dynamic-redirects]
+  - target: $.paths['/api/dynamic-qr/{slug}'].patch
+    update:
+      tags: [dynamic-redirects]
+      x-apievangelist-note: Version-guarded write — If-Match required, 412 on a stale validator, safely replayable.
+  - target: $.paths['/api/dynamic-qr/{slug}'].delete
+    update:
+      tags: [dynamic-redirects]
+  - target: $.paths['/api/dynamic-qr-vaults'].post
+    update:
+      tags: [vaults]
+  - target: $.paths['/api/dynamic-qr-vaults/{vaultId}'].get
+    update:
+      tags: [vaults]
+  - target: $.paths['/api/dynamic-qr-vaults/{vaultId}'].patch
+    update:
+      tags: [vaults]
+  - target: $.paths['/api/dynamic-qr-vaults/{vaultId}'].delete
+    update:
+      tags: [vaults]
+  - target: $.paths['/api/dynamic-qr-vaults/{vaultId}/qr'].post
+    update:
+      tags: [vaults]
+  - target: $.paths['/api/dynamic-qr-vaults/{vaultId}/qr/{slug}'].patch
+    update:
+      tags: [vaults]
+  - target: $.paths['/api/dynamic-qr-vaults/{vaultId}/qr/{slug}/analytics'].get
+    update:
+      tags: [vaults]
+  - target: $.paths['/api/dynamic-qr-vaults/{vaultId}/qr/{slug}/analytics'].delete
+    update:
+      tags: [vaults]
+  - target: $.paths['/r/{slug}'].get
+    update:
+      tags: [redirect-runtime]
+  - target: $.paths['/r/{slug}'].head
+    update:
+      tags: [redirect-runtime]
+  - target: $.components.schemas.Error
+    update:
+      x-apievangelist-note: >-
+        Flat {success,error} envelope rather than RFC 9457 application/problem+json. There is no
+        stable machine-readable error code, so an agent can only branch on HTTP status.

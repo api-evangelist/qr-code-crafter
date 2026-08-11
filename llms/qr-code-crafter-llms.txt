@@ -1,0 +1,85 @@
+# QR Code Crafter
+
+> QR Code Crafter is a privacy-first QR code generator for humans and browser agents. It creates provider-independent static assets and optional managed dynamic URL redirects without accounts or visitor tracking.
+
+QR Code Crafter supports URL, campaign, GS1 Digital Link product URLs, file, social, appstore, App Store, Google Play, app, Wi-Fi, email, SMS, phone, WhatsApp, vCard, event, location, cryptocurrency, PIX, UPI, PhonePe-compatible UPI, Swish, PromptPay, VietQR, Swiss QR-bill, SEPA/GiroCode EPC, iDEAL payment links, MobilePay/Vipps payment links, QRIS supporting links, PayPal, Venmo, Cash App, and managed dynamic URL QR workflows. Prefer the WebMCP runtime tool when available; otherwise use the documented OpenAPI endpoint.
+
+## Agent Interfaces
+
+- [AI guide](https://qrcodecrafter.com/ai.txt): Operational guidance, payload patterns, rate-limit behavior, and verification commands for automated agents.
+- [APIs.json index](https://qrcodecrafter.com/apis.json): Machine-readable discovery index for API documentation, OpenAPI, WebMCP, support, terms, privacy, and agent guidance.
+- Markdown page variants: Send `Accept: text/markdown` to public content URLs to receive stripped, token-efficient Markdown with `X-Markdown-Tokens` and `Content-Signal` headers.
+- [WebMCP context](https://qrcodecrafter.com/.well-known/webmcp.json): Runtime tool metadata, schemas, generator components, and agent recipes.
+- Local WebMCP runtime QA: `npm run test:local-webmcp` validates production-build WebMCP discovery locally before live Netlify checks.
+- [OpenAPI JSON](https://qrcodecrafter.com/.well-known/openapi.json): Machine-readable API schema for QR generation.
+- [OpenAPI YAML](https://qrcodecrafter.com/openapi.yaml): Human-readable API schema with examples and agent recipe extensions.
+- [Agent update feed](https://qrcodecrafter.com/feeds/agent-updates.xml): Change notices for agent integrations.
+
+## Core Tools
+
+- [QR code API](https://qrcodecrafter.com/qr-code-api): Generate QR assets from POST payloads or GET query parameters.
+- [QR code API pricing](https://qrcodecrafter.com/qr-code-api-pricing): Understand free static API usage, rate limits, optional API keys, and dynamic-platform tradeoffs.
+- [Bulk QR API](https://qrcodecrafter.com/.netlify/functions/generate-qr-bulk): Generate ZIP archives of up to 50 static QR files with manifest.csv and manifest.json.
+- [Generate and verify QR API](https://qrcodecrafter.com/.netlify/functions/generate-verified-qr): Generate SVG, PNG, JPG, or WebP, review the payload and bounded production settings, decode the final file, compare payload hashes, and return a receipt without decoded payload content. This is not print, device, ISO, accessibility, malware, or security certification.
+- [Dynamic URL QR code](https://qrcodecrafter.com/dynamic-qr-code): Create a stable managed redirect, update its HTTPS destination, pause or resume it, and rotate its private management capability. Aggregate counts are currently disabled; a later explicit rollout may expose owner-only approximate totals without visitor identifiers.
+- [Static vs dynamic QR security](https://qrcodecrafter.com/static-vs-dynamic-qr-security): Compare redirect risk, provider dependency, scan analytics privacy, phishing exposure, and safer print governance.
+- [URL QR code generator](https://qrcodecrafter.com/url): Create static URL QR codes with optional campaign parameters.
+- [Bulk QR code generator](https://qrcodecrafter.com/bulk-qr-code-generator): Create ZIP archives from pasted rows or CSV data.
+- [QR code file formats](https://qrcodecrafter.com/qr-code-file-formats): Choose SVG, PNG, JPG, WebP, PDF, or EPS for print and digital workflows.
+- [QR code with logo](https://qrcodecrafter.com/qr-code-with-logo): Create branded static QR codes with safe error correction.
+- [QR Code Safety Lab](https://qrcodecrafter.com/qr-code-safety-lab): Inspect versioned structural-safety fixtures and a reproducible export-readability benchmark with JSON, CSV, ZIP, methodology, and citation downloads.
+- [QR Code Readability Benchmark](https://qrcodecrafter.com/qr-code-readability-lab): Generate and verify a production candidate, or review all 21 controlled export fixtures, exact-decode results, release checksums, methodology, and citation files.
+- [Readability benchmark data](https://qrcodecrafter.com/data/qr-readability-lab-v1.json): Machine-readable exact-decode results for controlled PNG, JPG, WebP, and rendered SVG fixtures.
+- [Complete readability release](https://qrcodecrafter.com/data/qr-readability-lab-v1-release.zip): Deterministic ZIP containing the results, fixtures, methodology, and citation files.
+- [Readability SHA-256 manifest](https://qrcodecrafter.com/data/qr-readability-lab-v1-manifest.json): File sizes and checksums for every release member and the complete archive.
+- [Independent readability reproducer](https://qrcodecrafter.com/data/qr-readability-lab-v1-reproducer.zip): Pinned Node.js project that regenerates and verifies the eight published v1 artifacts without access to the private application repository.
+- [Reproducer SHA-256 manifest](https://qrcodecrafter.com/data/qr-readability-lab-v1-reproducer-manifest.json): File sizes and checksums for the standalone reproducer archive and its source files.
+
+## Payment Generators
+
+- [PayPal QR code generator](https://qrcodecrafter.com/payments/paypal): Generate static QR codes for PayPal.Me payment links.
+- [Venmo QR code generator](https://qrcodecrafter.com/payments/venmo): Generate static QR codes for Venmo profile links.
+- [Cash App QR code generator](https://qrcodecrafter.com/payments/cash-app): Generate static QR codes for Cash App $Cashtags, profile URLs, or copied payment links.
+- [PromptPay QR code generator](https://qrcodecrafter.com/payments/promptpay): Generate static Thai PromptPay QR codes for registered IDs and optional THB amounts.
+- [VietQR code generator](https://qrcodecrafter.com/payments/vietqr): Generate static Vietnamese VietQR bank-transfer QR codes for bank BINs, account numbers, optional VND amounts, and memos.
+- [Swiss QR-bill code generator](https://qrcodecrafter.com/payments/swissqr): Generate static Swiss QR-bill QR payloads for structured addresses, Swiss or Liechtenstein IBANs, CHF/EUR amounts, references, and invoice messages.
+- [Swish QR code generator](https://qrcodecrafter.com/payments/swish): Generate static QR codes for Swedish Swish C2B payment payloads.
+- [SEPA QR code generator](https://qrcodecrafter.com/payments/sepa): Generate EPC QR and GiroCode-compatible codes for SEPA credit transfers.
+- [iDEAL QR code guide](https://qrcodecrafter.com/ideal-qr-code): Create static QR assets from verified iDEAL payment links without claiming to create official iDEAL transactions.
+- [MobilePay/Vipps QR code guide](https://qrcodecrafter.com/mobilepay-vipps-qr-code): Create static QR assets from verified MobilePay or Vipps payment links for Nordic payment signage.
+- [BLIK QR code guide](https://qrcodecrafter.com/blik-qr-code): Create static QR assets from verified BLIK-enabled checkout URLs, PSP payment requests, invoice pages, or donation destinations. Covers Polish wording such as kod BLIK QR, kod QR BLIK, płatność BLIK QR, and link płatności BLIK without claiming to create official BLIK transactions.
+- [QRIS QR code guide](https://qrcodecrafter.com/qris-qr-code): Prepare QRIS supporting-link QR assets and print guidance while keeping official QRIS payment payloads with licensed providers.
+- [PIX QR code generator](https://qrcodecrafter.com/payments/pix): Generate Brazilian PIX payment QR codes.
+- [UPI QR code generator](https://qrcodecrafter.com/payments/upi): Generate Indian UPI payment QR codes.
+- [PhonePe QR code generator](https://qrcodecrafter.com/payments/phonepe): Generate PhonePe-compatible UPI payment QR codes.
+
+## Content Guides
+
+- [Static vs dynamic QR codes](https://qrcodecrafter.com/static-vs-dynamic-qr-code): Understand when permanent static QR codes are the right choice.
+- [QR code tracking with UTM](https://qrcodecrafter.com/utm-qr-code-generator): Add analytics attribution without requiring a QR redirect provider.
+- [QR code tracking dashboard](https://qrcodecrafter.com/qr-code-tracking-dashboard): Plan QR reporting with UTM links, placement IDs, first-party analytics, and dynamic-provider tradeoffs.
+- [Email signature QR codes](https://qrcodecrafter.com/email-signature-qr-code): Add compact QR codes to Gmail, Outlook, Apple Mail, and managed team signatures.
+- [Print QR code preflight](https://qrcodecrafter.com/qr-code-print-preflight): Prepare QR assets for print size, contrast, margin, and scan testing.
+- [QR code stickers](https://qrcodecrafter.com/qr-code-sticker): Prepare QR assets for stickers, labels, packaging, events, and asset tags.
+- [GS1 Digital Link QR guide](https://qrcodecrafter.com/gs1-digital-link-qr-code): Use the URL generator for validated GS1 Digital Link URIs, product packaging, GTIN, resolver, and Sunrise 2027 workflows.
+- [LINE QR codes](https://qrcodecrafter.com/line-qr-code): Create static QR assets for verified LINE Official Account, add-friend, chat, OpenChat, LIFF, Mini App, and campaign URLs.
+- [Invoice QR codes](https://qrcodecrafter.com/invoice-with-qr-code): Add QR codes to invoices for payment links, PDF documents, portals, and support pages.
+- [GiroCode EPC QR guide](https://qrcodecrafter.com/girocode): Use the SEPA generator for GiroCode-style EPC QR payment payloads on invoices, donations, and bank-transfer instructions.
+- [QR code safety and privacy](https://qrcodecrafter.com/qr-code-safety-privacy): Review safe payload and privacy practices.
+- [Adobe QR code generator alternative](https://qrcodecrafter.com/adobe-qr-code-generator-alternative): Compare Adobe-style design-suite QR workflows with QR Code Crafter static QR exports, file formats, privacy, and agent generation.
+- [QRCode Monkey alternative](https://qrcodecrafter.com/qrcode-monkey-alternative): Compare QRCode Monkey-style branded static QR generation with QR Code Crafter exports, print checks, privacy, and automation.
+- [QRStuff alternative](https://qrcodecrafter.com/qrstuff-alternative): Compare QRStuff broad QR platform workflows with QR Code Crafter static, provider-independent QR assets.
+- [QR TIGER alternative](https://qrcodecrafter.com/qr-tiger-alternative): Compare QR TIGER dynamic campaigns, analytics, bulk generation, and API workflows with QR Code Crafter static QR exports.
+- [Flowcode alternative](https://qrcodecrafter.com/flowcode-alternative): Compare Flowcode-style branded dynamic QR campaigns with QR Code Crafter static, direct, print-ready, and agent-ready QR workflows.
+- [QRCodeChimp alternative](https://qrcodecrafter.com/qrcodechimp-alternative): Compare QRCodeChimp dynamic QR, digital business card, analytics, and template workflows with QR Code Crafter static QR exports.
+- [Uniqode alternative](https://qrcodecrafter.com/uniqode-alternative): Compare Uniqode enterprise QR management, APIs, analytics, and governance with QR Code Crafter static QR assets.
+- [Bitly QR code alternative](https://qrcodecrafter.com/bitly-qr-code-alternative): Compare Bitly QR and link-management analytics workflows with QR Code Crafter direct static QR generation.
+- [ME-QR alternative](https://qrcodecrafter.com/me-qr-alternative): Compare ME-QR dynamic QR management, analytics, folders, storage, and ad-free plans with QR Code Crafter direct static QR files.
+- [The QR Code Generator alternative](https://qrcodecrafter.com/the-qr-code-generator-alternative): Compare The QR Code Generator static and limited dynamic QR workflows with QR Code Crafter static QR exports and automation.
+- [Sitemap](https://qrcodecrafter.com/sitemap.xml): Full crawlable URL list for public pages and localized routes.
+
+## Optional
+
+- [Privacy policy](https://qrcodecrafter.com/privacy): Privacy and data-handling commitments.
+- [Terms](https://qrcodecrafter.com/terms): Terms of service.
+- [FAQ](https://qrcodecrafter.com/faq): Product and workflow questions.

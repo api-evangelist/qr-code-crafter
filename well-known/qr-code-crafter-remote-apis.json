@@ -1,0 +1,118 @@
+{
+  "aid": "qrcodecrafter.com:api-index",
+  "name": "QR Code Crafter",
+  "description": "Public QR generation, final-asset verification, and managed redirect APIs for 27 payload types, six file formats, bounded bulk workflows, and browser-agent integrations.",
+  "image": "https://qrcodecrafter.com/icons/icon-512x512.png",
+  "url": "https://qrcodecrafter.com/apis.json",
+  "created": "2026-07-21",
+  "modified": "2026-08-08",
+  "specificationVersion": "0.21",
+  "type": "Index",
+  "kind": "company",
+  "tags": [
+    "QR code",
+    "OpenAPI",
+    "WebMCP",
+    "developer tools",
+    "static QR",
+    "dynamic QR"
+  ],
+  "maintainers": [
+    {
+      "FN": "QR Code Crafter Agent Support",
+      "email": "support@qrcodecrafter.com",
+      "url": "https://qrcodecrafter.com/imprint",
+      "org": "Brand Aspect Ltd"
+    }
+  ],
+  "common": [
+    {
+      "type": "TermsOfService",
+      "url": "https://qrcodecrafter.com/terms"
+    },
+    {
+      "type": "PrivacyPolicy",
+      "url": "https://qrcodecrafter.com/privacy"
+    },
+    {
+      "type": "Support",
+      "url": "mailto:support@qrcodecrafter.com"
+    }
+  ],
+  "apis": [
+    {
+      "aid": "qrcodecrafter.com:qr-generation-api",
+      "name": "QR Code Crafter API",
+      "description": "Generate branded QR assets for 27 payload types as SVG, PNG, JPG, WebP, PDF, or EPS; generate and decode-check final SVG, PNG, JPG, or WebP assets; create bounded bulk ZIPs; and manage optional dynamic URL redirects through documented capability links.",
+      "image": "https://qrcodecrafter.com/icons/icon-512x512.png",
+      "humanURL": "https://qrcodecrafter.com/qr-code-api",
+      "baseURL": "https://qrcodecrafter.com/.netlify/functions/generate-qr",
+      "version": "1.0.0",
+      "tags": [
+        "QR code generation",
+        "image export",
+        "bulk generation",
+        "dynamic redirects",
+        "browser agents",
+        "final-asset verification"
+      ],
+      "properties": [
+        {
+          "type": "Documentation",
+          "url": "https://qrcodecrafter.com/qr-code-api"
+        },
+        {
+          "type": "Endpoint",
+          "mediaType": "application/json",
+          "url": "https://qrcodecrafter.com/.netlify/functions/generate-verified-qr"
+        },
+        {
+          "type": "OpenAPI",
+          "mediaType": "application/json",
+          "url": "https://qrcodecrafter.com/.well-known/openapi.json"
+        },
+        {
+          "type": "OpenAPI",
+          "mediaType": "application/yaml",
+          "url": "https://qrcodecrafter.com/openapi.yaml"
+        },
+        {
+          "type": "WebMCP",
+          "mediaType": "application/json",
+          "url": "https://qrcodecrafter.com/.well-known/webmcp.json"
+        },
+        {
+          "type": "AgentGuide",
+          "mediaType": "text/plain",
+          "url": "https://qrcodecrafter.com/ai.txt"
+        },
+        {
+          "type": "LLMSTxt",
+          "mediaType": "text/plain",
+          "url": "https://qrcodecrafter.com/llms.txt"
+        },
+        {
+          "type": "Pricing",
+          "url": "https://qrcodecrafter.com/qr-code-api-pricing"
+        }
+      ],
+      "prompts": [
+        {
+          "name": "QR Code Crafter agent guide",
+          "description": "Payload patterns, rate-limit behavior, verification commands, and safe QR generation workflows for automated agents.",
+          "type": "AgentPrompt",
+          "mediaType": "text/plain",
+          "url": "https://qrcodecrafter.com/ai.txt"
+        }
+      ],
+      "contact": [
+        {
+          "FN": "QR Code Crafter Agent Support",
+          "email": "support@qrcodecrafter.com",
+          "url": "https://qrcodecrafter.com/qr-code-api",
+          "org": "Brand Aspect Ltd"
+        }
+      ]
+    }
+  ]
+}

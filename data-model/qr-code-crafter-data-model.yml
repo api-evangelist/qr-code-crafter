@@ -1,0 +1,137 @@
+generated: '2026-08-11'
+method: derived
+source: openapi/qr-code-crafter-openapi-original.json
+docs: https://qrcodecrafter.com/qr-code-api
+summary: >-
+  Two disconnected halves. The generation half is STATELESS — a request goes in, an asset (or a ZIP,
+  or a verification receipt) comes out, and nothing is persisted, so there are no entities to relate.
+  The dynamic-redirect half is stateful and forms a shallow three-level tree: a vault owns child
+  records, a standalone record has no parent, and analytics hang off a record. Identity is capability
+  based rather than account based — there is no Account, User, Organization, Project or Team entity
+  anywhere in the contract, which is the defining feature of this data model.
+identifiers:
+  - entity: DynamicQrRecord
+    field: slug
+    pattern: '^[A-Za-z0-9_-]{22}$'
+    note: 22-char opaque id. Public — it appears in the printed redirect URL /r/{slug} and is NOT an authorization secret.
+  - entity: DynamicQrVault
+    field: vaultId
+    pattern: '^[A-Za-z0-9_-]{22}$'
+    note: 22-char opaque id. The spec states explicitly it is "not sufficient for authorization".
+  - entity: capability token
+    field: managementToken
+    pattern: '^[A-Za-z0-9_-]{43}$'
+    note: >-
+      43-char bearer secret. Returned ONCE at creation or explicit rotation and never again — it is
+      the only authorization principal in the system. Losing it is unrecoverable.
+entities:
+  - name: DynamicQrRecord
+    schema: DynamicQrRecord
+    persisted: true
+    fields: [slug, destination, label, status, version, createdAt, updatedAt]
+    status_enum: [active, paused]
+    constraints:
+      destination: https-only URI, max 2048 chars
+      label: max 80 chars
+    note: >-
+      `version` is an integer mirrored onto the ETag / X-Dynamic-QR-Version headers and is the
+      optimistic-concurrency validator for every write.
+  - name: DynamicQrVault
+    schema: DynamicQrVaultRecord
+    persisted: true
+    fields: [vaultId, name, version, createdAt, updatedAt, emptyExpiresAt, records]
+    constraints:
+      children: up to 50 child records
+    note: >-
+      `emptyExpiresAt` is a garbage-collection field — an empty vault expires on its own, which is
+      how the provider bounds abandoned state without accounts.
+  - name: DynamicQrVaultChildRecord
+    schema: DynamicQrVaultChildRecord
+    persisted: true
+    note: >-
+      Composed by allOf from DynamicQrRecord plus DynamicQrVaultChildMetadata; it carries no
+      properties of its own in the spec.
+  - name: DynamicQrVaultChildMetadata
+    schema: DynamicQrVaultChildMetadata
+    persisted: true
+    fields: [folder, tags]
+    note: The only organizational metadata in the system, and it exists only inside a vault.
+  - name: DynamicQrAnalyticsSummary
+    schema: DynamicQrAnalyticsSummary
+    persisted: true
+    fields: [available, approximate, retentionDays, dailyCountLimit, totalScans, daily, lastCountedAt]
+    note: >-
+      Aggregate only — a lifetime count and UTC daily buckets, retained 90 days, capped at 100,000
+      counts/day, and the property is omitted entirely when analytics are disabled for a deployment.
+      No visitor identifier of any kind is modeled.
+  - name: QrVerificationReceipt
+    schema: QrVerificationReceipt
+    persisted: false
+    fields: [version, status, productionReady, verifiedAt, payload, decode, productionChecks, cautions, evidence, limitation]
+    note: >-
+      Returned by generateVerifiedQr and discarded. `limitation` is a self-describing disclaimer field
+      carried in the payload itself — an unusual and honest piece of schema design.
+  - name: QrSafePayloadReview
+    schema: QrSafePayloadReview
+    persisted: false
+  - name: QrProductionChecks
+    schema: QrProductionChecks
+    persisted: false
+  - name: BulkQrManifestRow
+    schema: BulkQrManifestRow
+    persisted: false
+    fields: [filename, value, format, status, bytes, message]
+    note: One row per file in the generated ZIP; also emitted as manifest.csv and manifest.json inside the archive.
+  - name: GeneratedAssetDimensions
+    schema: GeneratedAssetDimensions
+    persisted: false
+    fields: [width, height, unit]
+    note: Mirrored onto the X-QR-Width / X-QR-Height / X-QR-Unit response headers on the binary GET path.
+relationships:
+  - from: DynamicQrVault
+    to: DynamicQrVaultChildRecord
+    type: has_many
+    via: records
+    cardinality: 0..50
+    evidence: DynamicQrVaultRecord.records array; createDynamicQrVaultChild POSTs under /api/dynamic-qr-vaults/{vaultId}/qr
+  - from: DynamicQrVaultChildRecord
+    to: DynamicQrRecord
+    type: composed_of
+    via: allOf
+    evidence: DynamicQrVaultChildRecord = DynamicQrRecord + DynamicQrVaultChildMetadata
+  - from: DynamicQrVaultChildRecord
+    to: DynamicQrVaultChildMetadata
+    type: has_one
+    via: allOf
+  - from: DynamicQrVaultChildRecord
+    to: DynamicQrAnalyticsSummary
+    type: has_one
+    via: analytics
+    evidence: getDynamicQrVaultChildAnalytics returns DynamicQrVaultChildAnalyticsResponse
+  - from: DynamicQrRecord
+    to: DynamicQrAnalyticsSummary
+    type: has_one
+    via: analytics
+    evidence: DynamicQrManageResponse.analytics — property omitted when analytics are disabled
+  - from: QrVerificationReceipt
+    to: QrSafePayloadReview
+    type: has_one
+    via: payload
+  - from: QrVerificationReceipt
+    to: QrProductionChecks
+    type: has_one
+    via: productionChecks
+  - from: GenerateBulkQrResponse
+    to: BulkQrManifestRow
+    type: has_many
+    via: manifest
+absent_entities:
+  - Account
+  - User
+  - Organization or Team
+  - Project
+  - Subscription or Invoice
+  - Webhook subscription
+absent_entities_note: >-
+  Their absence is deliberate and is the product's stated positioning — "without accounts or visitor
+  tracking". Recording it here so a later pass does not read the gap as missing harvest.

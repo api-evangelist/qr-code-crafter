@@ -1,0 +1,112 @@
+generated: '2026-08-11'
+method: derived
+source: openapi/qr-code-crafter-openapi-original.json
+searched:
+  - https://qrcodecrafter.com/ai.txt
+  - https://qrcodecrafter.com/privacy
+  - https://qrcodecrafter.com/.well-known/webmcp.json
+note: >-
+  QR Code Crafter publishes NO certification or compliance program — no SOC 2, ISO 27001, PCI DSS,
+  HIPAA or FedRAMP claim appears anywhere on the site, and no trust center exists. It is a two-person
+  UK company (Brand Aspect Ltd) shipping a free API. What it does conform to is a set of open
+  specifications, and it conforms to more of them than most providers ten times its size. No
+  `Compliance` pointer is emitted, because no compliance program is published.
+standards:
+  - id: openapi-3.0
+    conforms: true
+    evidence: >-
+      openapi: 3.0.1 document served at /.well-known/openapi.json and /openapi.yaml, 19 operations,
+      34 component schemas, every operation carries an operationId and a summary.
+  - id: apis-json-0.21
+    conforms: true
+    evidence: >-
+      The provider publishes its OWN APIs.json 0.21 index at https://qrcodecrafter.com/apis.json
+      (aid qrcodecrafter.com:api-index, modified 2026-08-08) with apis[], properties[], prompts[] and
+      contact[]. Fewer than a fraction of a percent of catalog providers self-publish an APIs.json.
+  - id: llms-txt
+    conforms: true
+    evidence: https://qrcodecrafter.com/llms.txt — H1, blockquote summary, sectioned link lists.
+  - id: ai-txt
+    conforms: true
+    evidence: https://qrcodecrafter.com/ai.txt — capabilities, authentication, rate limits, discovery, workflows.
+  - id: openai-plugin-manifest
+    conforms: true
+    evidence: /.well-known/ai-plugin.json, schema_version v1, auth type none, api.type openapi.
+  - id: webmcp
+    conforms: true
+    evidence: >-
+      /.well-known/webmcp.json 1.0.0 with 8 tool definitions carrying inputSchema, plus server-rendered
+      form[toolname]/tooldescription attributes and Permissions-Policy tools=(self) observed live.
+  - id: mcp
+    conforms: false
+    evidence: No hosted MCP JSON-RPC server — /mcp and /.well-known/mcp.json both return 404.
+  - id: a2a
+    conforms: false
+    evidence: /.well-known/agent-card.json and /.well-known/agent.json both return 404.
+  - id: rfc9457-problem-details
+    conforms: false
+    evidence: >-
+      Errors use a flat application/json {success,error} envelope, not application/problem+json.
+  - id: rfc9110-conditional-requests
+    conforms: true
+    evidence: >-
+      If-Match is REQUIRED on all seven update/delete operations, ETag is returned on every record
+      read and write, and 412 is documented for a missing or stale validator.
+  - id: rfc9116-security-txt
+    conforms: false
+    evidence: /.well-known/security.txt returns 404.
+  - id: rfc8594-sunset-header
+    conforms: false
+    evidence: No Sunset or Deprecation header declared; no deprecation policy published.
+  - id: rfc8414-oauth-metadata
+    conforms: false
+    evidence: /.well-known/oauth-authorization-server returns 404. The API uses no OAuth.
+  - id: oauth2
+    conforms: false
+    evidence: securitySchemes are apiKey (header) and http bearer capability tokens only.
+  - id: oidc
+    conforms: false
+  - id: rate-limit-headers
+    conforms: true
+    partial: true
+    evidence: >-
+      Retry-After, X-RateLimit-Limit and X-RateLimit-Remaining are declared on 429 responses in the
+      spec. These are the legacy X- forms, not the IETF draft RateLimit-* fields, and they were not
+      observed on an unthrottled 200.
+  - id: idempotency
+    conforms: true
+    partial: true
+    evidence: >-
+      Version-guarded conditional writes on all update/delete operations. No Idempotency-Key on the
+      create path; see conventions/qr-code-crafter-conventions.yml.
+  - id: pagination
+    conforms: false
+    evidence: No collection-listing operation exists, so there is no pagination contract.
+  - id: gs1-digital-link
+    conforms: true
+    partial: true
+    evidence: >-
+      Documented support for generating validated GS1 Digital Link product URIs (GTIN, resolver,
+      Sunrise 2027 workflows) at /gs1-digital-link-qr-code. This is payload-level support for the
+      standard, not certification by GS1.
+  - id: emvco-merchant-presented-qr
+    conforms: true
+    partial: true
+    evidence: >-
+      Generates EMVCo-style merchant-presented payloads for PIX, UPI, PromptPay, VietQR and QRIS, and
+      EPC/GiroCode for SEPA. The provider is explicit that it produces QR ASSETS from verified payment
+      payloads and does not create official scheme transactions or act as a licensed provider.
+  - id: iso-iec-18004
+    conforms: true
+    partial: true
+    evidence: >-
+      Standard QR symbology with selectable L/M/Q/H error correction and configurable quiet zone. The
+      Readability Lab publishes 21 controlled fixtures with exact-decode results, SHA-256 manifests, a
+      public methodology and an independent reproducer — but the provider states plainly that this is
+      "not print, device, ISO, accessibility, malware, or security certification".
+  - id: gdpr
+    conforms: null
+    evidence: >-
+      A UK company with a published privacy policy and a no-accounts, no-visitor-tracking design that
+      enumerates what it does not store. No formal GDPR compliance statement or DPA is published, so
+      this is recorded as unasserted rather than true.

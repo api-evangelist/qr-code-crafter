@@ -1,0 +1,63 @@
+generated: '2026-08-11'
+method: searched
+source: https://qrcodecrafter.com/ai.txt
+derived_from: openapi/qr-code-crafter-openapi-original.json
+versioning:
+  scheme: none
+  current: '1.0.0'
+  docs: https://qrcodecrafter.com/qr-code-api
+  note: >-
+    No version segment in any path, no version header, no date pinning. info.version reads 1.0.0 and
+    the surface is treated as a single evolving contract. A consumer has no way to pin.
+deprecation:
+  policy_url: null
+  policy_published: false
+  sunset_header: false
+  deprecation_header: false
+  note: >-
+    No deprecation policy is published anywhere on the site, no RFC 8594 Sunset or Deprecation header
+    is declared in the OpenAPI, and no operation carries deprecated: true. This is the clearest gap in
+    an otherwise strong operational posture — the provider tells agents what has been ADDED (the Atom
+    feed) but has never said what happens when something is removed.
+sla:
+  url: null
+  uptime_target: null
+  note: >-
+    The pricing page states plainly that anyone needing contracted volume guarantees or an SLA should
+    run their own service or buy a commercial contract elsewhere. No SLA is offered.
+status_page: null
+status_page_note: >-
+  /status returns 404 and no third-party status page (statuspage.io, instatus, betteruptime) is linked
+  from the site, ai.txt, llms.txt or the provider's own apis.json. The service runs on Netlify and
+  degrades through documented 503 responses on the storage-backed operations rather than through a
+  published status surface.
+change_notification:
+  atom_feed: https://qrcodecrafter.com/feeds/agent-updates.xml
+  see: changelog/qr-code-crafter-changelog.yml
+  note: The change channel is a machine-readable Atom feed aimed at agent integrations.
+deprecated_operations: []
+availability_semantics:
+  - status: 503
+    meaning: >-
+      Dynamic QR or vault storage unavailable, or the 100,000 active-record hard capacity reached. The
+      spec states no record was changed / deletion was not confirmed, making retry safe.
+    operations: [createDynamicQr, getDynamicQr, updateDynamicQr, deleteDynamicQr, createDynamicQrVault, getDynamicQrVaultChildAnalytics, redirectDynamicQr]
+  - status: 410
+    meaning: A dynamic QR destination is owner-paused or operator-blocked — the printed code still resolves, but to a gone state.
+    operations: [redirectDynamicQr]
+  - status: 423
+    meaning: Operator-blocked record; the capability holder cannot update or resume it.
+    operations: [updateDynamicQr]
+data_retention:
+  dynamic_qr_analytics_days: 90
+  note: >-
+    Aggregate daily count buckets only. The provider enumerates what it does NOT store — IP addresses,
+    user agents, referrers, cookies, locations, device data, browser data, unique visitor identifiers,
+    destinations, management tokens.
+x-evidence:
+  - url: https://qrcodecrafter.com/status
+    http_status: 404
+    fetched: '2026-08-11'
+  - url: https://qrcodecrafter.com/ai.txt
+    http_status: 200
+    fetched: '2026-08-11'

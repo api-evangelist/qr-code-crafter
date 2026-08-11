@@ -1,0 +1,2274 @@
+{
+  "version": "1.0.0",
+  "name": "QRCodeCrafter WebMCP Context",
+  "description": "Machine-consumable context for QRCodeCrafter interactive components and forms.",
+  "lastUpdated": "2026-07-12",
+  "site": {
+    "name": "QR Code Crafter",
+    "url": "https://qrcodecrafter.com"
+  },
+  "api": {
+    "openapi": "https://qrcodecrafter.com/.well-known/openapi.json",
+    "dynamicQr": {
+      "description": "Private editable HTTPS redirects with privacy-preserving aggregate analytics enabled in production.",
+      "analytics": {
+        "availability": "enabled_in_production",
+        "propertyOmittedWhenDisabled": true,
+        "approximate": true,
+        "dailyRetentionDays": 90,
+        "dailyCountLimit": 100000,
+        "stores": ["slug", "lifetime count", "UTC daily count buckets"],
+        "doesNotStore": ["IP addresses", "user agents", "referrers", "cookies", "locations", "device data", "browser data", "unique visitor identifiers", "destinations", "management tokens"]
+      },
+      "activeRecordCapacity": 100000,
+      "create": {
+        "method": "POST",
+        "endpoint": "https://qrcodecrafter.com/api/dynamic-qr",
+        "requestSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["destination"],
+          "properties": {
+            "destination": { "type": "string", "format": "uri", "pattern": "^https://", "maxLength": 2048 },
+            "label": { "type": "string", "maxLength": 80 }
+          }
+        },
+        "response": {
+          "status": 201,
+          "fields": ["success", "record", "managementToken", "redirectUrl", "managementUrl"],
+          "headers": ["ETag", "X-Dynamic-QR-Version", "Location"],
+          "tokenPattern": "^[A-Za-z0-9_-]{43}$",
+          "tokenReturnedOnlyOnCreateOrRotation": true
+        }
+      },
+      "campaign": {
+        "runtimeTool": "create_dynamic_qr_campaign",
+        "declarativeForm": "form[toolname=\"create_dynamic_qr_campaign_pack\"]",
+        "maxRows": 5,
+        "execution": "Sequential same-origin POST requests to /api/dynamic-qr with no automatic retry",
+        "privacy": "Management capabilities exist only in the returned private manifest or downloaded browser-local ZIP and are never stored in browser storage",
+        "assets": "The visible workflow generates SVG, PNG, JPG, WebP, PDF, or EPS files locally; runtime agents call generate_qr for each returned redirectUrl"
+      },
+      "manage": {
+        "endpointTemplate": "https://qrcodecrafter.com/api/dynamic-qr/{slug}",
+        "slugPattern": "^[A-Za-z0-9_-]{22}$",
+        "authentication": { "type": "http", "scheme": "bearer", "header": "Authorization", "format": "Bearer {managementToken}" },
+        "get": { "method": "GET", "responseFields": ["success", "record", "redirectUrl", "analytics"], "responseHeaders": ["ETag", "X-Dynamic-QR-Version"] },
+        "patch": {
+          "method": "PATCH",
+          "requiredHeaders": ["Authorization", "If-Match", "X-Dynamic-QR-Version", "Content-Type: application/json"],
+          "requestSchema": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": false,
+            "properties": {
+              "destination": { "type": "string", "format": "uri", "pattern": "^https://", "maxLength": 2048 },
+              "label": { "type": "string", "maxLength": 80 },
+              "status": { "type": "string", "enum": ["active", "paused"] },
+              "rotateToken": { "type": "boolean" }
+            }
+          },
+          "responseHeaders": ["ETag", "X-Dynamic-QR-Version"],
+          "tokenRotation": "When rotateToken is true, managementToken and managementUrl are returned once and the previous token is invalidated."
+        },
+        "delete": {
+          "method": "DELETE",
+          "requiredHeaders": ["Authorization", "If-Match", "X-Dynamic-QR-Version"],
+          "responseStatus": 204,
+          "description": "Permanently deletes the redirect. The printed QR code will return 404 and deletion cannot be undone."
+        },
+        "errors": { "400": "invalid request", "401": "invalid bearer capability", "403": "cross-origin write", "412": "missing or stale record version", "423": "operator-blocked record", "429": "rate limit exceeded", "503": "storage unavailable or active-record capacity reached" }
+      },
+      "redirect": {
+        "method": "GET",
+        "endpointTemplate": "https://qrcodecrafter.com/r/{slug}",
+        "public": true,
+        "responses": { "302": "Location destination", "404": "unknown slug", "410": "owner-paused or operator-blocked destination", "503": "temporary storage failure" },
+        "doesNotCollect": ["IP addresses", "user agents", "referrers", "cookies", "locations", "device data", "browser data", "unique visitor identifiers", "tracking parameters"]
+      }
+    },
+    "generateQrEndpoint": "https://qrcodecrafter.com/.netlify/functions/generate-qr",
+    "generateVerifiedQrEndpoint": "https://qrcodecrafter.com/.netlify/functions/generate-verified-qr",
+    "generateBulkQrEndpoint": "https://qrcodecrafter.com/.netlify/functions/generate-qr-bulk",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "formats": [
+      "svg",
+      "png",
+      "jpg",
+      "webp",
+      "pdf",
+      "eps"
+    ],
+    "defaults": {
+      "format": "png",
+      "size": 1024,
+      "margin": 4,
+      "fgColor": "#000000",
+      "bgColor": "#ffffff",
+      "errorCorrectionLevel": "H"
+    },
+    "rateLimits": {
+      "model": "cost-weighted per client",
+      "windowSeconds": 60,
+      "defaultBudgetUnits": 180,
+      "authenticatedBudgetUnits": 600,
+      "formatCosts": {
+        "svg": 1,
+        "png": 3,
+        "jpg": 4,
+        "webp": 4,
+        "pdf": 6,
+        "eps": 3
+      },
+      "additionalCosts": {
+        "logo": 4,
+        "sizeOver2048": 2,
+        "sizeOver3072": 4
+      },
+      "retryHeaders": [
+        "Retry-After",
+        "X-RateLimit-Limit",
+        "X-RateLimit-Remaining"
+      ],
+      "guidance": "Throttle batch jobs, prefer SVG for high-volume tests, and honor Retry-After before retrying 429 or 503 responses."
+    },
+    "bulk": {
+      "endpoint": "https://qrcodecrafter.com/.netlify/functions/generate-qr-bulk",
+      "method": "POST",
+      "maxRows": 50,
+      "defaultFormat": "svg",
+      "responseFormats": [
+        "application/json",
+        "application/zip"
+      ],
+      "manifestFiles": [
+        "manifest.csv",
+        "manifest.json"
+      ],
+      "guidance": "Use rows as CSV text or row objects with value and optional filename. Prefer SVG for large batches; split PDF, JPG, or WebP batches when rate-limit headers require it."
+    },
+    "verifiedGeneration": {
+      "endpoint": "https://qrcodecrafter.com/.netlify/functions/generate-verified-qr",
+      "method": "POST",
+      "formats": ["svg", "png", "jpg", "webp"],
+      "checks": ["structuralPayloadReview", "quietZone", "contrast", "errorCorrection", "finalAssetDecode", "payloadHashComparison"],
+      "blockedPayloads": ["URLs with embedded credentials", "private-network URLs", "URL payloads with control characters"],
+      "decodeFailureStatus": 422,
+      "assetReturnPolicy": "Asset bytes are returned only when the final file decodes to the requested payload. Decode failures return the full receipt without data or dataUrl.",
+      "receiptDoesNotInclude": ["decoded payload", "malware verdict", "device certification", "print certification"],
+      "limitation": "Uses one jsQR software decoder and rendering pipeline. It is not ISO/IEC 15415 verification, physical print testing, device, printer, accessibility, malware, or security certification."
+    },
+    "contentTypes": [
+      "url",
+      "appstore",
+      "social",
+      "text",
+      "wifi",
+      "email",
+      "sms",
+      "phone",
+      "whatsapp",
+      "vcard",
+      "event",
+      "location",
+      "crypto",
+      "pix",
+      "upi",
+      "phonepe",
+      "swish",
+      "sepa",
+      "ideal",
+      "mobilepayvipps",
+      "qris",
+      "paypal",
+      "venmo",
+      "cashapp",
+      "promptpay",
+      "vietqr",
+      "swissqr"
+    ],
+    "payloadPatterns": {
+      "url": "https://example.com/path?utm_source=qr&utm_medium=print",
+      "appstore": "https://apps.apple.com/app/id1234567890",
+      "social": "https://www.instagram.com/qrcodecrafter",
+      "text": "Short public text only",
+      "wifi": "WIFI:T:WPA;S:Network Name;P:Password;H:false;;",
+      "email": "mailto:hello@example.com?subject=Subject&body=Message",
+      "sms": "SMSTO:+15551234567:Message",
+      "phone": "tel:+15551234567",
+      "whatsapp": "https://wa.me/15551234567?text=Message",
+      "vcard": "BEGIN:VCARD\nVERSION:3.0\nFN:Name\nTEL:+15551234567\nEMAIL:hello@example.com\nEND:VCARD",
+      "event": "BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:Event\nDTSTART:20300601T100000\nEND:VEVENT\nEND:VCALENDAR",
+      "location": "geo:37.422,-122.084?q=1600%20Amphitheatre%20Parkway",
+      "crypto": "bitcoin:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080?amount=0.01",
+      "pix": "00020101021126510014BR.GOV.BCB.PIX0117smoke@example.com0208SMOKE12352040000530398654041.235802BR5910SMOKE TEST6009SAO PAULO62120508SMOKE12363047B22",
+      "upi": "upi://pay?pa=merchant@upi&pn=Merchant&am=10.00&cu=INR",
+      "phonepe": "upi://pay?pa=phonepe-merchant@upi&pn=PhonePe%20Merchant&am=10.00&cu=INR&tn=Invoice",
+      "swish": "C1234567890;125,50;Invoice%20123;0",
+      "sepa": "BCD\n002\n1\nSCT\nCOBADEFFXXX\nSmoke Test GmbH\nDE89370400440532013000\nEUR49.90\n\nINV-2026-001",
+      "ideal": "https://pay.example.nl/ideal/invoice-2026-001",
+      "mobilepayvipps": "https://pay.example.com/mobilepay-vipps/invoice-2026-001",
+      "qris": "https://merchant.example.co.id/qris/invoice-2026-001",
+      "paypal": "https://paypal.me/qrcodecrafter/25USD",
+      "venmo": "https://venmo.com/u/qrcodecrafter",
+      "cashapp": "https://cash.app/$qrcodecrafter",
+      "promptpay": "00020101021229370016A000000677010111011300668123456785802TH53037645406125.5063047652",
+      "vietqr": "00020101021238560010A0000007270126000697041501121133666688880208QRIBFTTA530370454061500005802VN62100806INV123630421F5",
+      "swissqr": "SPC\n0200\n1\nCH9300762011623852957\nS\nRobert Schneider AG\nRue du Lac\n1268\n2501\nBiel\nCH\n\n\n\n\n\n\n\n199.95\nCHF\n\n\n\n\n\n\n\nNON\n\nInvoice 2026-001\nEPD\n\n\n"
+    },
+    "agentRecipes": {
+      "url": {
+        "label": "Campaign landing page",
+        "bestFormats": [
+          "svg",
+          "pdf",
+          "png"
+        ],
+        "request": {
+          "value": "https://example.com/path?utm_source=qr&utm_medium=print&utm_campaign=spring",
+          "format": "svg",
+          "size": 1024,
+          "margin": 4,
+          "fgColor": "#111111",
+          "bgColor": "#ffffff",
+          "errorCorrectionLevel": "H"
+        }
+      },
+      "appstore": {
+        "label": "App download page",
+        "bestFormats": [
+          "svg",
+          "png",
+          "pdf"
+        ],
+        "request": {
+          "value": "https://apps.apple.com/app/id1234567890?pt=123456&ct=qr_campaign&mt=8",
+          "format": "svg",
+          "size": 1024,
+          "margin": 4,
+          "fgColor": "#111111",
+          "bgColor": "#ffffff",
+          "errorCorrectionLevel": "H"
+        }
+      },
+      "social": {
+        "label": "Social profile",
+        "bestFormats": [
+          "png",
+          "svg",
+          "webp"
+        ],
+        "request": {
+          "value": "https://www.instagram.com/qrcodecrafter",
+          "format": "png",
+          "size": 1024,
+          "margin": 4,
+          "fgColor": "#111111",
+          "bgColor": "#ffffff",
+          "errorCorrectionLevel": "H"
+        }
+      },
+      "text": {
+        "label": "Public text note",
+        "bestFormats": [
+          "png",
+          "svg",
+          "webp"
+        ],
+        "request": {
+          "value": "Order #A-12345 | Table 7 | Save 15% with code QR15.",
+          "format": "png",
+          "size": 1024,
+          "margin": 4,
+          "fgColor": "#111111",
+          "bgColor": "#ffffff",
+          "errorCorrectionLevel": "H"
+        }
+      },
+      "wifi": {
+        "label": "Guest Wi-Fi login",
+        "bestFormats": [
+          "svg",
+          "png",
+          "pdf"
+        ],
+        "request": {
+          "value": "WIFI:T:WPA;S:Guest Network;P:Welcome123;H:false;;",
+          "format": "svg",
+          "size": 1024,
+          "margin": 4,
+          "fgColor": "#111111",
+          "bgColor": "#ffffff",
+          "errorCorrectionLevel": "H"
+        }
+      },
+      "email": {
+        "label": "Prefilled email action",
+        "bestFormats": [
+          "svg",
+          "png",
+          "jpg"
+        ],
+        "request": {
+          "value": "mailto:support@example.com?subject=QR%20support&body=Please%20contact%20me",
+          "format": "svg",
+          "size": 1024,
+          "margin": 4,
+          "fgColor": "#111111",
+          "bgColor": "#ffffff",
+          "errorCorrectionLevel": "H"
+        }
+      },
+      "sms": {
+        "label": "Prefilled SMS action",
+        "bestFormats": [
+          "svg",
+          "png",
+          "jpg"
+        ],
+        "request": {
+          "value": "SMSTO:+15551234567:QR smoke test",
+          "format": "svg",
+          "size": 1024,
+          "margin": 4,
+          "fgColor": "#111111",
+          "bgColor": "#ffffff",
+          "errorCorrectionLevel": "H"
+        }
+      },
+      "phone": {
+        "label": "Tap-to-call phone number",
+        "bestFormats": [
+          "svg",
+          "png",
+          "jpg"
+        ],
+        "request": {
+          "value": "tel:+15551234567",
+          "format": "svg",
+          "size": 1024,
+          "margin": 4,
+          "fgColor": "#111111",
+          "bgColor": "#ffffff",
+          "errorCorrectionLevel": "H"
+        }
+      },
+      "whatsapp": {
+        "label": "WhatsApp chat link",
+        "bestFormats": [
+          "png",
+          "svg",
+          "webp"
+        ],
+        "request": {
+          "value": "https://wa.me/15551234567?text=QR%20smoke%20test",
+          "format": "png",
+          "size": 1024,
+          "margin": 4,
+          "fgColor": "#111111",
+          "bgColor": "#ffffff",
+          "errorCorrectionLevel": "H"
+        }
+      },
+      "vcard": {
+        "label": "Contact card",
+        "bestFormats": [
+          "pdf",
+          "svg",
+          "png"
+        ],
+        "request": {
+          "value": "BEGIN:VCARD\nVERSION:3.0\nFN:Jordan Smith\nTEL:+15558675309\nEMAIL:hello@example.com\nEND:VCARD",
+          "format": "pdf",
+          "size": 1024,
+          "margin": 4,
+          "fgColor": "#111111",
+          "bgColor": "#ffffff",
+          "errorCorrectionLevel": "H"
+        }
+      },
+      "event": {
+        "label": "Calendar invite",
+        "bestFormats": [
+          "svg",
+          "png",
+          "pdf"
+        ],
+        "request": {
+          "value": "BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:Product Demo\nDTSTART:20300601T100000\nDTEND:20300601T110000\nLOCATION:Online\nURL:https://example.com/demo\nEND:VEVENT\nEND:VCALENDAR",
+          "format": "svg",
+          "size": 1024,
+          "margin": 4,
+          "fgColor": "#111111",
+          "bgColor": "#ffffff",
+          "errorCorrectionLevel": "H"
+        }
+      },
+      "location": {
+        "label": "Map location",
+        "bestFormats": [
+          "png",
+          "svg",
+          "pdf"
+        ],
+        "request": {
+          "value": "geo:37.422,-122.084?q=1600%20Amphitheatre%20Parkway",
+          "format": "png",
+          "size": 1024,
+          "margin": 4,
+          "fgColor": "#111111",
+          "bgColor": "#ffffff",
+          "errorCorrectionLevel": "H"
+        }
+      },
+      "crypto": {
+        "label": "Bitcoin payment URI",
+        "bestFormats": [
+          "svg",
+          "png",
+          "pdf"
+        ],
+        "request": {
+          "value": "bitcoin:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080?amount=0.01",
+          "format": "svg",
+          "size": 1024,
+          "margin": 4,
+          "fgColor": "#111111",
+          "bgColor": "#ffffff",
+          "errorCorrectionLevel": "H"
+        }
+      },
+      "pix": {
+        "label": "Brazil PIX payment",
+        "bestFormats": [
+          "eps",
+          "pdf",
+          "png"
+        ],
+        "request": {
+          "value": "00020101021126510014BR.GOV.BCB.PIX0117smoke@example.com0208SMOKE12352040000530398654041.235802BR5910SMOKE TEST6009SAO PAULO62120508SMOKE12363047B22",
+          "format": "eps",
+          "size": 1024,
+          "margin": 4,
+          "fgColor": "#111111",
+          "bgColor": "#ffffff",
+          "errorCorrectionLevel": "H"
+        }
+      },
+      "upi": {
+        "label": "India UPI payment",
+        "bestFormats": [
+          "pdf",
+          "svg",
+          "png"
+        ],
+        "request": {
+          "value": "upi://pay?pa=merchant@upi&pn=Merchant&am=10.00&cu=INR&tn=Invoice",
+          "format": "pdf",
+          "size": 1024,
+          "margin": 4,
+          "fgColor": "#111111",
+          "bgColor": "#ffffff",
+          "errorCorrectionLevel": "H"
+        }
+      },
+      "phonepe": {
+        "label": "PhonePe-compatible UPI payment",
+        "bestFormats": [
+          "pdf",
+          "svg",
+          "png"
+        ],
+        "request": {
+          "value": "upi://pay?pa=phonepe-merchant@upi&pn=PhonePe%20Merchant&am=10.00&cu=INR&tn=Invoice",
+          "format": "pdf",
+          "size": 1024,
+          "margin": 4,
+          "fgColor": "#111111",
+          "bgColor": "#ffffff",
+          "errorCorrectionLevel": "H"
+        }
+      },
+      "swish": {
+        "label": "Sweden Swish payment",
+        "bestFormats": [
+          "pdf",
+          "svg",
+          "png"
+        ],
+        "request": {
+          "value": "C1234567890;125,50;Invoice%20123;0",
+          "format": "pdf",
+          "size": 1024,
+          "margin": 4,
+          "fgColor": "#111111",
+          "bgColor": "#ffffff",
+          "errorCorrectionLevel": "H"
+        }
+      },
+      "sepa": {
+        "label": "SEPA credit transfer payment",
+        "bestFormats": [
+          "pdf",
+          "svg",
+          "png"
+        ],
+        "request": {
+          "value": "BCD\n002\n1\nSCT\nCOBADEFFXXX\nSmoke Test GmbH\nDE89370400440532013000\nEUR49.90\n\nINV-2026-001",
+          "format": "pdf",
+          "size": 1024,
+          "margin": 4,
+          "fgColor": "#111111",
+          "bgColor": "#ffffff",
+          "errorCorrectionLevel": "H"
+        }
+      },
+      "ideal": {
+        "label": "iDEAL provider payment link",
+        "bestFormats": [
+          "svg",
+          "png",
+          "pdf"
+        ],
+        "request": {
+          "value": "https://pay.example.nl/ideal/invoice-2026-001",
+          "format": "svg",
+          "size": 1024,
+          "margin": 4,
+          "fgColor": "#111111",
+          "bgColor": "#ffffff",
+          "errorCorrectionLevel": "H"
+        }
+      },
+      "mobilepayvipps": {
+        "label": "MobilePay/Vipps provider payment link",
+        "bestFormats": [
+          "svg",
+          "png",
+          "pdf"
+        ],
+        "request": {
+          "value": "https://pay.example.com/mobilepay-vipps/invoice-2026-001",
+          "format": "svg",
+          "size": 1024,
+          "margin": 4,
+          "fgColor": "#111111",
+          "bgColor": "#ffffff",
+          "errorCorrectionLevel": "H"
+        }
+      },
+      "qris": {
+        "label": "QRIS supporting payment link",
+        "bestFormats": [
+          "svg",
+          "png",
+          "pdf"
+        ],
+        "request": {
+          "value": "https://merchant.example.co.id/qris/invoice-2026-001",
+          "format": "svg",
+          "size": 1024,
+          "margin": 4,
+          "fgColor": "#111111",
+          "bgColor": "#ffffff",
+          "errorCorrectionLevel": "H"
+        }
+      },
+      "paypal": {
+        "label": "PayPal.Me payment link",
+        "bestFormats": [
+          "svg",
+          "png",
+          "pdf"
+        ],
+        "request": {
+          "value": "https://paypal.me/qrcodecrafter/25USD",
+          "format": "svg",
+          "size": 1024,
+          "margin": 4,
+          "fgColor": "#111111",
+          "bgColor": "#ffffff",
+          "errorCorrectionLevel": "H"
+        }
+      },
+      "venmo": {
+        "label": "Venmo profile link",
+        "bestFormats": [
+          "svg",
+          "png",
+          "pdf"
+        ],
+        "request": {
+          "value": "https://venmo.com/u/qrcodecrafter",
+          "format": "svg",
+          "size": 1024,
+          "margin": 4,
+          "fgColor": "#111111",
+          "bgColor": "#ffffff",
+          "errorCorrectionLevel": "H"
+        }
+      },
+      "cashapp": {
+        "label": "Cash App $Cashtag link",
+        "bestFormats": [
+          "svg",
+          "png",
+          "pdf"
+        ],
+        "request": {
+          "value": "https://cash.app/$qrcodecrafter",
+          "format": "svg",
+          "size": 1024,
+          "margin": 4,
+          "fgColor": "#111111",
+          "bgColor": "#ffffff",
+          "errorCorrectionLevel": "H"
+        }
+      },
+      "promptpay": {
+        "label": "Thai PromptPay payment payload",
+        "bestFormats": [
+          "svg",
+          "png",
+          "pdf"
+        ],
+        "request": {
+          "value": "00020101021229370016A000000677010111011300668123456785802TH53037645406125.5063047652",
+          "format": "svg",
+          "size": 1024,
+          "margin": 4,
+          "fgColor": "#111111",
+          "bgColor": "#ffffff",
+          "errorCorrectionLevel": "H"
+        }
+      },
+      "vietqr": {
+        "label": "Vietnam VietQR bank transfer payload",
+        "bestFormats": [
+          "svg",
+          "png",
+          "pdf"
+        ],
+        "request": {
+          "value": "00020101021238560010A0000007270126000697041501121133666688880208QRIBFTTA530370454061500005802VN62100806INV123630421F5",
+          "format": "svg",
+          "size": 1024,
+          "margin": 4,
+          "fgColor": "#111111",
+          "bgColor": "#ffffff",
+          "errorCorrectionLevel": "H"
+        }
+      },
+      "swissqr": {
+        "label": "Swiss QR-bill structured-address payment payload",
+        "bestFormats": [
+          "pdf",
+          "svg",
+          "eps"
+        ],
+        "request": {
+          "value": "SPC\n0200\n1\nCH9300762011623852957\nS\nRobert Schneider AG\nRue du Lac\n1268\n2501\nBiel\nCH\n\n\n\n\n\n\n\n199.95\nCHF\n\n\n\n\n\n\n\nNON\n\nInvoice 2026-001\nEPD\n\n\n",
+          "format": "pdf",
+          "size": 1024,
+          "margin": 4,
+          "fgColor": "#111111",
+          "bgColor": "#ffffff",
+          "errorCorrectionLevel": "H"
+        }
+      }
+    },
+    "logo": {
+      "supportedMimeTypes": [
+        "image/png",
+        "image/jpeg",
+        "image/jpg",
+        "image/webp"
+      ],
+      "maxBytes": 1048576,
+      "recommendedErrorCorrectionLevel": "H"
+    },
+    "verification": {
+      "runtimeToolCommand": "npm run test:live-webmcp -- --base-url https://qrcodecrafter.com",
+      "localRuntimeToolCommand": "npm run test:local-webmcp",
+      "liveSmokeCommand": "npm run test:live-qr -- --base-url https://qrcodecrafter.com --method POST --discovery-source remote --payload-source recipes",
+      "formats": [
+        "svg",
+        "png",
+        "jpg",
+        "webp",
+        "pdf",
+        "eps"
+      ],
+      "checks": [
+        "declarativeFormPost",
+        "crossDocumentJsonLd",
+        "httpStatus",
+        "contentType",
+        "fileSignature",
+        "decodedByteLength",
+        "responseMetadata",
+        "renderedDimensions",
+        "scanReadability",
+        "llmsTxt",
+        "visibleWebMcpFormAnnotations"
+      ],
+      "scanReadableFormats": [
+        "svg",
+        "png",
+        "jpg",
+        "webp"
+      ],
+      "scanPayloadComparison": "Exact decoded payload match, allowing only line-ending normalization and trailing whitespace trimming for decoder compatibility.",
+      "responseMetadata": [
+        "downloadUrl",
+        "dataUrl",
+        "byteLength",
+        "dimensions",
+        "X-QR-Width",
+        "X-QR-Height",
+        "X-QR-Unit",
+        "X-QR-Bytes"
+      ]
+    },
+    "llmsTxt": "https://qrcodecrafter.com/llms.txt"
+  },
+  "agentGuidance": {
+    "preferredWorkflow": "Prefer WebMCP runtime or declarative results for compact metadata. Use downloadUrl when present for no-logo public HTTP(S) URL assets, or POST JSON to the generateQrEndpoint when an agent explicitly needs base64 data/dataUrl bytes.",
+    "runtimeTool": "The live site registers generate_qr, generate_verified_qr, generate_bulk_qr, create_dynamic_qr, create_dynamic_qr_campaign, and manage_dynamic_qr through document.modelContext.registerTool when available, with navigator.modelContext fallback. Server-rendered forms expose matching toolname and tooldescription attributes before client islands hydrate.",
+    "payloadWarning": "Static QR codes cannot be changed after printing unless the encoded URL is a redirect that the user controls.",
+    "rateLimit": "QR generation uses cost-weighted soft limits per client. SVG is cheapest; raster, PDF, larger size, and logo jobs consume more budget. Honor Retry-After, X-RateLimit-Limit, and X-RateLimit-Remaining on 429 and 503 responses.",
+    "llmsTxt": "Read https://qrcodecrafter.com/llms.txt for a concise Markdown index of agent interfaces, core QR tools, payment generators, content guides, and optional policies."
+  },
+  "tools": [
+    {
+      "name": "generate_qr",
+      "title": "Generate QR code",
+      "type": "runtime-webmcp-tool",
+      "path": "/",
+      "description": "Generate a static QR code file from a supplied payload. Supports URL, Wi-Fi, text, contact, event, location, app, social, and payment QR assets including VietQR.",
+      "registration": [
+        "document.modelContext.registerTool",
+        "navigator.modelContext.registerTool",
+        "form[toolname=\"generate_qr\"]"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "value"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "value": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048,
+            "description": "Exact QR payload to encode, such as an HTTPS URL, WIFI payload, vCard, calendar event, payment URI, or text."
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "svg",
+              "png",
+              "jpg",
+              "webp",
+              "pdf",
+              "eps"
+            ],
+            "default": "png"
+          },
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "url",
+              "appstore",
+              "social",
+              "text",
+              "wifi",
+              "email",
+              "sms",
+              "phone",
+              "whatsapp",
+              "vcard",
+              "event",
+              "location",
+              "crypto",
+              "pix",
+              "upi",
+              "phonepe",
+              "swish",
+              "sepa",
+              "ideal",
+              "mobilepayvipps",
+              "qris",
+              "paypal",
+              "venmo",
+              "cashapp",
+              "promptpay",
+              "vietqr",
+              "swissqr"
+            ]
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 256,
+            "maximum": 4096,
+            "default": 1024
+          },
+          "margin": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 16,
+            "default": 4
+          },
+          "fgColor": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$",
+            "default": "#000000"
+          },
+          "bgColor": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$",
+            "default": "#ffffff"
+          },
+          "errorCorrectionLevel": {
+            "type": "string",
+            "enum": [
+              "L",
+              "M",
+              "Q",
+              "H"
+            ],
+            "default": "H"
+          },
+          "logo": {
+            "type": "string",
+            "maxLength": 1398230,
+            "pattern": "^data:image\\/(png|jpe?g|webp);base64,[A-Za-z0-9+/]+={0,2}$",
+            "description": "Optional PNG, JPG, or WebP data URL for a centered logo."
+          }
+        }
+      },
+      "execute": {
+        "method": "POST",
+        "endpoint": "https://qrcodecrafter.com/.netlify/functions/generate-qr",
+        "response": "Direct API JSON includes base64 data/dataUrl plus downloadUrl when safe. Runtime WebMCP and HTML JSON-LD fallbacks return compact metadata, byteLength, dimensions, suggestedFilename, and download instructions without raw asset bytes."
+      }
+    },
+    {
+      "name": "generate_verified_qr",
+      "title": "Generate and verify QR code",
+      "type": "runtime-webmcp-tool",
+      "path": "/qr-code-readability-lab",
+      "description": "Generate a static QR asset, structurally review its payload, assess quiet zone and contrast settings, decode the final file, compare payload hashes, and return a bounded evidence-linked receipt.",
+      "registration": [
+        "document.modelContext.registerTool",
+        "navigator.modelContext.registerTool",
+        "form[toolname=\"generate_verified_qr\"]"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "required": ["value"],
+        "additionalProperties": false,
+        "properties": {
+          "value": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048,
+            "description": "Exact QR payload to generate, structurally review, decode, and hash-compare."
+          },
+          "format": {
+            "type": "string",
+            "enum": ["svg", "png", "jpg", "webp"],
+            "default": "png"
+          },
+          "contentType": {
+            "type": "string",
+            "enum": ["url", "appstore", "social", "text", "wifi", "email", "sms", "phone", "whatsapp", "vcard", "event", "location", "crypto", "pix", "upi", "phonepe", "swish", "sepa", "ideal", "mobilepayvipps", "qris", "paypal", "venmo", "cashapp", "promptpay", "vietqr", "swissqr"]
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 256,
+            "maximum": 4096,
+            "default": 1024
+          },
+          "margin": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 16,
+            "default": 4
+          },
+          "fgColor": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$",
+            "default": "#000000"
+          },
+          "bgColor": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$",
+            "default": "#ffffff"
+          },
+          "errorCorrectionLevel": {
+            "type": "string",
+            "enum": ["L", "M", "Q", "H"],
+            "default": "H"
+          },
+          "logo": {
+            "type": "string",
+            "maxLength": 1398230,
+            "pattern": "^data:image\\/(png|jpe?g|webp);base64,[A-Za-z0-9+/]+={0,2}$",
+            "description": "Optional PNG, JPG, or WebP data URL for a centered logo."
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "untrustedContentHint": true
+      },
+      "execute": {
+        "method": "POST",
+        "endpoint": "https://qrcodecrafter.com/.netlify/functions/generate-verified-qr",
+        "response": "Direct JSON includes asset bytes only when final-file decoding matches the requested payload. Decode failures return HTTP 422 with the full receipt and no data or dataUrl. Runtime WebMCP and HTML JSON-LD fallbacks omit raw asset bytes while retaining hashes, checks, cautions, evidence links, and download instructions."
+      }
+    },
+    {
+      "name": "generate_bulk_qr",
+      "title": "Generate bulk QR ZIP",
+      "type": "runtime-webmcp-tool",
+      "path": "/bulk-qr-code-generator",
+      "description": "Generate a ZIP archive of up to 50 static QR code files from CSV or row objects for labels, classrooms, packaging, menus, and agent batch workflows.",
+      "registration": [
+        "document.modelContext.registerTool",
+        "navigator.modelContext.registerTool"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "rows"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "rows": {
+            "oneOf": [
+              {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 50,
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "value"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "value": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 2048,
+                      "description": "Exact QR payload for this file."
+                    },
+                    "filename": {
+                      "type": "string",
+                      "maxLength": 64,
+                      "description": "Optional filename stem for this generated QR file."
+                    }
+                  }
+                }
+              },
+              {
+                "type": "string",
+                "maxLength": 220000,
+                "description": "CSV rows such as filename,value or value,filename."
+              }
+            ],
+            "description": "Rows to include in the ZIP archive. Use up to 50 rows per request."
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "svg",
+              "png",
+              "jpg",
+              "webp",
+              "pdf",
+              "eps"
+            ],
+            "default": "svg"
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 256,
+            "maximum": 4096,
+            "default": 1024
+          },
+          "margin": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 16,
+            "default": 4
+          },
+          "fgColor": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$",
+            "default": "#111111"
+          },
+          "bgColor": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$",
+            "default": "#ffffff"
+          },
+          "errorCorrectionLevel": {
+            "type": "string",
+            "enum": [
+              "L",
+              "M",
+              "Q",
+              "H"
+            ],
+            "default": "H"
+          }
+        }
+      },
+      "execute": {
+        "method": "POST",
+        "endpoint": "https://qrcodecrafter.com/.netlify/functions/generate-qr-bulk",
+        "accept": "application/zip",
+        "response": "ZIP archive with QR files plus manifest.csv and manifest.json, or JSON metadata with base64 ZIP data when application/json is requested"
+      }
+    },
+    {
+      "name": "create_dynamic_qr",
+      "title": "Create dynamic QR redirect",
+      "type": "runtime-webmcp-tool",
+      "path": "/dynamic-qr-code",
+      "description": "Create an editable public HTTPS redirect and return its stable QR URL plus a one-time private management capability.",
+      "registration": [
+        "document.modelContext.registerTool",
+        "navigator.modelContext.registerTool",
+        "form[toolname=\"create_dynamic_qr\"]"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "required": ["destination"],
+        "additionalProperties": false,
+        "properties": {
+          "destination": {
+            "type": "string",
+            "format": "uri",
+            "pattern": "^https://",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 80
+          }
+        }
+      },
+      "execute": {
+        "method": "POST",
+        "endpoint": "https://qrcodecrafter.com/api/dynamic-qr",
+        "response": "Returns the stable redirect URL, record, ETag, and one-time management token and URL. Store the capability securely."
+      }
+    },
+    {
+      "name": "manage_dynamic_qr",
+      "title": "Manage dynamic QR redirect",
+      "type": "runtime-webmcp-tool",
+      "path": "/dynamic-qr-code",
+      "description": "Read, update, pause, resume, rotate, or permanently delete a dynamic QR redirect with a private capability. Changes fetch the current ETag first.",
+      "registration": [
+        "document.modelContext.registerTool",
+        "navigator.modelContext.registerTool",
+        "form[toolname=\"manage_dynamic_qr\"]"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "required": ["action", "slug", "managementToken"],
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": ["read", "update", "pause", "resume", "rotate", "delete"]
+          },
+          "slug": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{22}$"
+          },
+          "managementToken": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{43}$"
+          },
+          "destination": {
+            "type": "string",
+            "format": "uri",
+            "pattern": "^https://",
+            "maxLength": 2048
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 80
+          }
+        }
+      },
+      "execute": {
+        "method": "GET then optional PATCH or DELETE",
+        "endpoint": "https://qrcodecrafter.com/api/dynamic-qr/{slug}",
+        "response": "Returns the record and ETag. Rotation returns a replacement capability once and immediately invalidates the previous token. Delete returns 204 and permanently disables the printed QR URL."
+      }
+    },
+    {
+      "name": "create_qr_vault",
+      "title": "Create dynamic QR vault",
+      "type": "runtime-webmcp-tool",
+      "path": "/dynamic-qr-code",
+      "description": "Create a private capability-managed vault for up to 50 dynamic QR redirects. The management token is returned only on creation. Empty vaults expire after six hours; adding a QR makes the project durable.",
+      "registration": ["document.modelContext.registerTool", "navigator.modelContext.registerTool", "form[toolname=\"create_qr_vault\"]"],
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": { "name": { "type": "string", "maxLength": 80 } }
+      },
+      "execute": {
+        "method": "POST",
+        "endpoint": "https://qrcodecrafter.com/api/dynamic-qr-vaults",
+        "response": "Returns the public vault, emptyExpiresAt lifecycle deadline, vault ETag, and the one-time private vault management token and URL. No child credentials or internal storage fields are exposed."
+      }
+    },
+    {
+      "name": "manage_qr_vault",
+      "title": "Manage dynamic QR vault",
+      "type": "runtime-webmcp-tool",
+      "path": "/dynamic-qr-code",
+      "description": "Read aggregate analytics, rename, delete, create, update, pause, resume, or delete vault-owned dynamic QR records with one private capability. Every mutation first fetches the current ETag.",
+      "registration": ["document.modelContext.registerTool", "navigator.modelContext.registerTool", "form[toolname=\"manage_qr_vault\"]"],
+      "inputSchema": {
+        "type": "object",
+        "required": ["action", "vaultId", "managementToken"],
+        "additionalProperties": false,
+        "properties": {
+          "action": { "type": "string", "enum": ["read", "read_analytics", "rename", "delete", "create_qr", "update_qr", "pause_qr", "resume_qr", "delete_qr"] },
+          "vaultId": { "type": "string", "pattern": "^[A-Za-z0-9_-]{22}$" },
+          "managementToken": { "type": "string", "pattern": "^[A-Za-z0-9_-]{43}$" },
+          "name": { "type": "string", "maxLength": 80 },
+          "slug": { "type": "string", "pattern": "^[A-Za-z0-9_-]{22}$" },
+          "destination": { "type": "string", "format": "uri", "pattern": "^https://", "maxLength": 2048 },
+          "label": { "type": "string", "maxLength": 80 },
+          "folder": { "type": "string", "maxLength": 40 },
+          "tags": { "type": "array", "maxItems": 8, "items": { "type": "string", "minLength": 1, "maxLength": 24 } }
+        }
+      },
+      "actionValidation": {
+        "read_analytics": ["slug"], "rename": ["name"], "create_qr": ["destination"], "update_qr": ["slug", "one of destination, label, folder, tags"],
+        "pause_qr": ["slug"], "resume_qr": ["slug"], "delete_qr": ["slug"]
+      },
+      "execute": {
+        "method": "GET, or GET then action-dependent POST, PATCH, or DELETE",
+        "endpoint": "https://qrcodecrafter.com/api/dynamic-qr-vaults/{vaultId}",
+        "response": "Returns only public vault/child fields, privacy-preserving aggregate scan analytics, and current validators. Vault and child ETags are distinct. The management token is never echoed by manage actions."
+      }
+    },
+    {
+      "name": "create_dynamic_qr_campaign",
+      "title": "Create dynamic QR campaign",
+      "type": "runtime-webmcp-tool",
+      "path": "/dynamic-qr-code",
+      "description": "Sequentially create up to five editable HTTPS redirects and return a private manifest with explicit partial failures and one-time management capabilities.",
+      "registration": [
+        "document.modelContext.registerTool",
+        "navigator.modelContext.registerTool",
+        "form[toolname=\"create_dynamic_qr_campaign_pack\"]"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "required": ["rows"],
+        "additionalProperties": false,
+        "properties": {
+          "rows": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 5,
+            "items": {
+              "type": "object",
+              "required": ["destination"],
+              "additionalProperties": false,
+              "properties": {
+                "destination": { "type": "string", "format": "uri", "pattern": "^https://", "maxLength": 2048 },
+                "label": { "type": "string", "maxLength": 80 },
+                "placement": { "type": "string", "maxLength": 120 },
+                "filename": { "type": "string", "maxLength": 64 }
+              }
+            }
+          }
+        }
+      },
+      "execute": {
+        "method": "Up to five sequential POST requests",
+        "endpoint": "https://qrcodecrafter.com/api/dynamic-qr",
+        "response": "Private created/failed manifest with stable redirect URLs and one-time management capabilities. Call generate_qr for each created redirectUrl when files are required."
+      }
+    }
+  ],
+  "components": [
+    {
+      "id": "dynamic-qr-vault-create-form", "type": "form", "path": "/dynamic-qr-code",
+      "purpose": "Create a private capability-managed dynamic QR vault; empty projects expire after six hours", "fields": ["name"], "toolName": "create_qr_vault",
+      "webMcpAnnotations": ["toolname", "tooldescription", "data-webmcp-context", "data-webmcp-source"]
+    },
+    {
+      "id": "dynamic-qr-vault-open-form", "type": "form", "path": "/dynamic-qr-code",
+      "purpose": "Open and read a private vault using its same-origin capability", "fields": ["vaultId", "managementToken"], "toolName": "manage_qr_vault",
+      "webMcpAnnotations": ["toolname", "tooldescription", "data-webmcp-context", "data-webmcp-source"]
+    },
+    {
+      "id": "dynamic-qr-vault-create-qr-form", "type": "form", "path": "/dynamic-qr-code",
+      "purpose": "Create a project-owned redirect inside an authorized vault", "fields": ["vaultId", "managementToken", "destination", "label", "folder", "tags"], "toolName": "manage_qr_vault",
+      "webMcpAnnotations": ["toolname", "tooldescription", "data-webmcp-context", "data-webmcp-source"]
+    },
+    {
+      "id": "dynamic-qr-vault-manage-qr-form", "type": "form", "path": "/dynamic-qr-code",
+      "purpose": "Update, pause, resume, or delete a project-owned redirect", "fields": ["vaultId", "managementToken", "slug", "destination", "label", "folder", "tags", "status"], "toolName": "manage_qr_vault",
+      "webMcpAnnotations": ["toolname", "tooldescription", "data-webmcp-context", "data-webmcp-source"]
+    },
+    {
+      "id": "webmcp-static-generate-qr-form",
+      "type": "form",
+      "path": "/",
+      "purpose": "Expose the generate_qr WebMCP tool as plain server-rendered HTML before the interactive QR Studio hydrates",
+      "fields": [
+        "value",
+        "format",
+        "contentType",
+        "size",
+        "margin",
+        "fgColor",
+        "bgColor",
+        "errorCorrectionLevel",
+        "logo"
+      ],
+      "toolName": "generate_qr",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "toolautosubmit",
+        "toolparamdescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "qr-api-request-builder-form",
+      "type": "form",
+      "path": "/qr-code-api",
+      "purpose": "Compose, run, and copy a request to the public static QR generation API",
+      "fields": [
+        "value",
+        "format",
+        "size",
+        "margin",
+        "fgColor",
+        "bgColor",
+        "errorCorrectionLevel"
+      ],
+      "toolName": "generate_qr",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "toolparamdescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "all-in-one-generator",
+      "type": "form",
+      "path": "/",
+      "purpose": "Create URL, text, Wi-Fi, email, SMS, phone, WhatsApp, and vCard QR codes from one interface",
+      "fields": [
+        "contentType",
+        "value",
+        "format",
+        "size",
+        "foregroundColor",
+        "backgroundColor",
+        "errorCorrectionLevel",
+        "logo"
+      ],
+      "toolName": "create_static_qr_code",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "url-generator-form",
+      "type": "form",
+      "path": "/url",
+      "purpose": "Create static URL QR codes for websites, PDFs, menus, social profiles, review links, app landing pages, and campaigns",
+      "fields": [
+        "url",
+        "contentType",
+        "value",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "format",
+        "size",
+        "colors",
+        "logo"
+      ],
+      "toolName": "create_url_qr_code",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "utm-generator-form",
+      "type": "form",
+      "path": "/utm-qr-code-generator",
+      "purpose": "Create static campaign URL QR codes with UTM source, medium, campaign, term, and content parameters",
+      "fields": [
+        "destinationUrl",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "format",
+        "size",
+        "colors",
+        "logo"
+      ],
+      "toolName": "create_utm_qr_code",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "pdf-generator-form",
+      "type": "form",
+      "path": "/pdf-qr-code-generator",
+      "purpose": "Create static QR codes that open hosted PDF files, document landing pages, menus, brochures, manuals, and spec sheets",
+      "fields": [
+        "pdfUrl",
+        "documentTitle",
+        "format",
+        "size",
+        "colors",
+        "logo"
+      ],
+      "toolName": "create_pdf_qr_code",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "pdf-stamp-form",
+      "type": "form",
+      "path": "/pdf-qr-code-generator",
+      "purpose": "Add a URL QR code to selected pages of one local PDF and download the modified PDF without uploading the file",
+      "fields": [
+        "pdfFile",
+        "destinationUrl",
+        "pageMode",
+        "pageNumber",
+        "position",
+        "qrSizeMm"
+      ],
+      "toolName": "add_qr_code_to_pdf",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "qr-image-generator-form",
+      "type": "form",
+      "path": "/qr-code-image",
+      "purpose": "Create styled static QR code images from public website or file URLs and plain text",
+      "fields": [
+        "url",
+        "text",
+        "contentType",
+        "value",
+        "format",
+        "size",
+        "colors",
+        "logo"
+      ],
+      "toolName": "create_qr_code_image",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "menu-generator-form",
+      "type": "form",
+      "path": "/menu-qr-code-generator",
+      "purpose": "Create static restaurant menu QR codes for hosted menus, ordering pages, allergen pages, nutrition pages, table tents, window signs, and takeaway placements",
+      "fields": [
+        "menuUrl",
+        "venueName",
+        "placement",
+        "format",
+        "size",
+        "colors",
+        "logo"
+      ],
+      "toolName": "create_menu_qr_code",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "google-review-generator-form",
+      "type": "form",
+      "path": "/google-review-qr-code",
+      "purpose": "Create static Google review QR codes from Google review request links, Place IDs, receipt prompts, counter signs, and follow-up card placements",
+      "fields": [
+        "reviewLinkOrPlaceId",
+        "businessName",
+        "format",
+        "size",
+        "colors",
+        "logo"
+      ],
+      "toolName": "create_google_review_qr_code",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "appstore-generator-form",
+      "type": "form",
+      "path": "/app-store-qr-code",
+      "purpose": "Create app download QR codes for App Store URLs, Google Play URLs, Android packages, Apple app IDs, and universal app landing pages",
+      "fields": [
+        "appLink",
+        "appName",
+        "format",
+        "size",
+        "colors",
+        "logo"
+      ],
+      "toolName": "create_app_store_qr_code",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "social-generator-form",
+      "type": "form",
+      "path": "/social-media-qr-code",
+      "purpose": "Create social profile and bio page QR codes for platform handles, direct profile URLs, creator pages, and campaign landing pages",
+      "fields": [
+        "platform",
+        "profileUrlOrHandle",
+        "profileName",
+        "format",
+        "size",
+        "colors",
+        "logo"
+      ],
+      "toolName": "create_social_profile_qr_code",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "bulk-generator-form",
+      "type": "form",
+      "path": "/bulk-qr-code-generator",
+      "purpose": "Create browser-local ZIP archives of up to 250 static QR files from pasted rows or CSV spreadsheets with filename,value, value,filename, url,name, or name,url headers",
+      "fields": [
+        "rowsOrCsv",
+        "filename",
+        "value",
+        "format",
+        "size",
+        "manifest"
+      ],
+      "toolName": "create_bulk_static_qr_codes",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "dynamic-qr-create-form",
+      "type": "form",
+      "path": "/dynamic-qr-code",
+      "purpose": "Create an editable public HTTPS redirect QR code and return its private management capability",
+      "fields": ["destination", "label"],
+      "toolName": "create_dynamic_qr",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "toolparamdescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "dynamic-qr-manage-form",
+      "type": "form",
+      "path": "/dynamic-qr-code",
+      "purpose": "Update, pause, resume, rotate, or permanently delete a dynamic URL QR code using its private management capability",
+      "fields": ["destination", "label", "status", "rotateToken"],
+      "toolName": "manage_dynamic_qr",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "toolparamdescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "dynamic-qr-campaign-form",
+      "type": "form",
+      "path": "/dynamic-qr-code",
+      "purpose": "Create up to five dynamic redirects sequentially and download a private browser-local ZIP containing QR assets plus capability manifests",
+      "fields": ["rowsOrCsv", "format"],
+      "toolName": "create_dynamic_qr_campaign_pack",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "toolparamdescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "dynamic-qr-open-form",
+      "type": "form",
+      "path": "/dynamic-qr-code",
+      "purpose": "Open a private dynamic QR management URL without persisting its capability in browser storage",
+      "fields": ["managementLink"],
+      "toolName": "open_dynamic_url_qr_management",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "toolparamdescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "text-generator-form",
+      "type": "form",
+      "path": "/text",
+      "purpose": "Create plain text QR codes",
+      "fields": [
+        "text",
+        "contentType",
+        "value",
+        "format",
+        "size",
+        "colors"
+      ],
+      "toolName": "create_text_qr_code",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "email-generator-form",
+      "type": "form",
+      "path": "/email",
+      "purpose": "Create email action QR codes",
+      "fields": [
+        "address",
+        "subject",
+        "body",
+        "contentType",
+        "value",
+        "format",
+        "size"
+      ],
+      "toolName": "create_email_qr_code",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "sms-generator-form",
+      "type": "form",
+      "path": "/sms",
+      "purpose": "Create SMS QR codes",
+      "fields": [
+        "phone",
+        "message",
+        "contentType",
+        "value",
+        "format",
+        "size"
+      ],
+      "toolName": "create_sms_qr_code",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "phone-generator-form",
+      "type": "form",
+      "path": "/phone",
+      "purpose": "Create phone call QR codes",
+      "fields": [
+        "phone",
+        "contentType",
+        "value",
+        "format",
+        "size"
+      ],
+      "toolName": "create_phone_qr_code",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "whatsapp-generator-form",
+      "type": "form",
+      "path": "/whatsapp",
+      "purpose": "Create WhatsApp chat QR codes",
+      "fields": [
+        "phone",
+        "message",
+        "contentType",
+        "value",
+        "format",
+        "size"
+      ],
+      "toolName": "create_whatsapp_qr_code",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "wifi-generator-form",
+      "type": "form",
+      "path": "/wifi",
+      "purpose": "Create Wi-Fi network QR codes",
+      "fields": [
+        "contentType",
+        "ssid",
+        "security",
+        "password",
+        "hidden"
+      ],
+      "toolName": "create_wifi_qr_code",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "event-generator-form",
+      "type": "form",
+      "path": "/event",
+      "purpose": "Create event calendar QR codes",
+      "fields": [
+        "importFile",
+        "importLink",
+        "title",
+        "start",
+        "end",
+        "timezone",
+        "mapUrl",
+        "location",
+        "street",
+        "city",
+        "state",
+        "postalCode",
+        "country",
+        "latitude",
+        "longitude",
+        "url",
+        "description",
+        "format",
+        "size",
+        "colors",
+        "logo"
+      ],
+      "toolName": "create_event_qr_code",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "crypto-generator-form",
+      "type": "form",
+      "path": "/crypto",
+      "purpose": "Create a static Bitcoin mainnet payment QR code",
+      "fields": [
+        "contentType",
+        "address",
+        "amount",
+        "format",
+        "size",
+        "colors",
+        "logo"
+      ],
+      "toolName": "create_crypto_payment_qr_code",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "location-generator-form",
+      "type": "form",
+      "path": "/location",
+      "purpose": "Create geo-location QR codes",
+      "fields": [
+        "mapUrl",
+        "address",
+        "latitude",
+        "longitude",
+        "format",
+        "size",
+        "colors",
+        "logo"
+      ],
+      "toolName": "create_location_qr_code",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "vcard-import-form",
+      "type": "form",
+      "path": "/vcard",
+      "purpose": "Import one browser-local vCard contact file to prefill the contact QR code form",
+      "fields": [
+        "vcardFile"
+      ],
+      "toolName": "import_vcard_contact",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "vcard-basic-info-form",
+      "type": "form",
+      "path": "/vcard",
+      "purpose": "Capture required vCard identity fields",
+      "fields": [
+        "name",
+        "phone",
+        "email"
+      ],
+      "toolName": "create_vcard_qr_code",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "business-card-generator-form",
+      "type": "form",
+      "path": "/business-card-qr-code",
+      "purpose": "Create compact vCard QR codes for printed business cards, badges, and networking follow-up",
+      "fields": [
+        "fullName",
+        "workEmail",
+        "phone",
+        "jobTitle",
+        "company",
+        "website",
+        "format",
+        "size",
+        "colors",
+        "logo"
+      ],
+      "toolName": "create_business_card_qr_code",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "vcard-additional-info-form",
+      "type": "form",
+      "path": "/vcard",
+      "purpose": "Capture optional vCard metadata",
+      "fields": [
+        "title",
+        "company",
+        "website"
+      ],
+      "toolName": "add_vcard_qr_code_details",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "upi-generator-form",
+      "type": "form",
+      "path": "/payments/upi",
+      "purpose": "Create UPI payment QR codes",
+      "fields": [
+        "pa",
+        "pn",
+        "am",
+        "tn"
+      ],
+      "toolName": "create_upi_payment_qr_code",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "phonepe-generator-form",
+      "type": "form",
+      "path": "/payments/phonepe",
+      "purpose": "Create static PhonePe-compatible UPI payment QR codes",
+      "fields": [
+        "pa",
+        "pn",
+        "am",
+        "tn"
+      ],
+      "toolName": "create_phonepe_payment_qr_code",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "swish-generator-form",
+      "type": "form",
+      "path": "/payments/swish",
+      "purpose": "Create static Swish payment QR codes for Sweden",
+      "fields": [
+        "payee",
+        "amount",
+        "message",
+        "amountEditable",
+        "messageEditable",
+        "format",
+        "size"
+      ],
+      "toolName": "create_swish_payment_qr_code",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "sepa-generator-form",
+      "type": "form",
+      "path": "/payments/sepa",
+      "purpose": "Create static EPC QR codes for SEPA credit transfers",
+      "fields": [
+        "name",
+        "iban",
+        "bic",
+        "amount",
+        "purposeCode",
+        "reference",
+        "remittanceText",
+        "format",
+        "size"
+      ],
+      "toolName": "create_sepa_payment_qr_code",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "paypal-generator-form",
+      "type": "form",
+      "path": "/payments/paypal",
+      "purpose": "Create static QR codes for PayPal.Me payment links",
+      "fields": [
+        "linkOrUsername",
+        "amount",
+        "currency",
+        "format",
+        "size"
+      ],
+      "toolName": "create_paypal_payment_qr_code",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "venmo-generator-form",
+      "type": "form",
+      "path": "/payments/venmo",
+      "purpose": "Create static profile-link QR codes from valid Venmo usernames or exact profile URLs; this does not issue official Venmo payment QR codes",
+      "fields": [
+        "linkOrUsername",
+        "format",
+        "size"
+      ],
+      "toolName": "create_venmo_profile_qr_code",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "cash-app-generator-form",
+      "type": "form",
+      "path": "/payments/cash-app",
+      "purpose": "Create static QR codes for Cash App $Cashtags, profile URLs, or copied payment links",
+      "fields": [
+        "linkOrCashtag",
+        "contentType",
+        "value",
+        "format",
+        "size"
+      ],
+      "toolName": "create_cash_app_qr_code",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "promptpay-generator-form",
+      "type": "form",
+      "path": "/payments/promptpay",
+      "purpose": "Create static Thai PromptPay QR codes for registered IDs and optional THB amounts",
+      "fields": [
+        "target",
+        "amount",
+        "contentType",
+        "value",
+        "format",
+        "size"
+      ],
+      "toolName": "create_promptpay_payment_qr_code",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "vietqr-generator-form",
+      "type": "form",
+      "path": "/payments/vietqr",
+      "purpose": "Create static Vietnamese VietQR bank transfer QR codes with bank BIN, account number, optional whole VND amount, and memo",
+      "fields": [
+        "bankBin",
+        "accountNumber",
+        "amount",
+        "memo",
+        "contentType",
+        "value",
+        "format",
+        "size"
+      ],
+      "toolName": "create_vietqr_payment_qr_code",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "toolparamdescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "swissqr-generator-form",
+      "type": "form",
+      "path": "/payments/swissqr",
+      "purpose": "Create static Swiss QR-bill payment QR codes with structured creditor address, optional debtor address, amount, reference, and message",
+      "fields": [
+        "iban",
+        "creditorName",
+        "creditorStreet",
+        "creditorBuilding",
+        "creditorPostalCode",
+        "creditorCity",
+        "creditorCountry",
+        "amount",
+        "currency",
+        "debtorName",
+        "debtorStreet",
+        "debtorBuilding",
+        "debtorPostalCode",
+        "debtorCity",
+        "debtorCountry",
+        "referenceType",
+        "reference",
+        "message",
+        "contentType",
+        "value",
+        "format",
+        "size"
+      ],
+      "toolName": "create_swiss_qr_bill_code",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "toolparamdescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "pix-generator-form",
+      "type": "form",
+      "path": "/payments/pix",
+      "purpose": "Create PIX payment QR codes",
+      "fields": [
+        "key",
+        "name",
+        "city",
+        "amount",
+        "txid"
+      ],
+      "toolName": "create_pix_payment_qr_code",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "ideal-payment-link-generator-form",
+      "type": "form",
+      "path": "/ideal-qr-code",
+      "purpose": "Create static QR codes for verified iDEAL, Wero, PSP checkout, invoice, donation, or payment-request URLs without processing payments",
+      "fields": [
+        "paymentProvider",
+        "paymentLink",
+        "format",
+        "size",
+        "colors",
+        "logo"
+      ],
+      "toolName": "create_ideal_payment_link_qr_code",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "mobilepay-vipps-payment-link-generator-form",
+      "type": "form",
+      "path": "/mobilepay-vipps-qr-code",
+      "purpose": "Create a supporting static browser-camera QR code for a provider-created Vipps MobilePay payment-link URL; official in-app payment QRs must come from the Portal, QR API, or PSP",
+      "fields": [
+        "paymentProvider",
+        "paymentLink",
+        "format",
+        "size",
+        "colors",
+        "logo"
+      ],
+      "toolName": "create_mobilepay_vipps_payment_link_qr_code",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "blik-payment-link-generator-form",
+      "type": "form",
+      "path": "/blik-qr-code",
+      "purpose": "Create static QR codes for verified BLIK-enabled checkout URLs, PSP payment requests, invoice pages, donation pages, or provider-approved destinations",
+      "fields": [
+        "paymentProvider",
+        "paymentLink",
+        "format",
+        "size",
+        "colors",
+        "logo"
+      ],
+      "toolName": "create_blik_payment_link_qr_code",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "qris-payment-link-generator-form",
+      "type": "form",
+      "path": "/qris-qr-code",
+      "purpose": "Create static QR codes for verified QRIS supporting URLs, payment-instructions pages, invoice pages, or provider-approved destinations without altering official QRIS payloads",
+      "fields": [
+        "paymentProvider",
+        "paymentLink",
+        "format",
+        "size",
+        "colors",
+        "logo"
+      ],
+      "toolName": "create_qris_supporting_link_qr_code",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "feedback-form",
+      "type": "form",
+      "path": "/",
+      "purpose": "Collect structured user feedback",
+      "fields": [
+        "message",
+        "feedback_type"
+      ],
+      "toolName": "send_site_feedback",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "not-found-search-form",
+      "type": "form",
+      "path": "/404",
+      "purpose": "Help users recover from navigation errors",
+      "fields": [
+        "search"
+      ],
+      "toolName": "search_qr_code_crafter",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "verified-qr-workflow",
+      "type": "form",
+      "path": "/qr-code-readability-lab",
+      "purpose": "Generate a QR asset and return an evidence-linked final-file decode and production-settings receipt",
+      "fields": [
+        "value",
+        "format",
+        "size",
+        "margin",
+        "fgColor",
+        "bgColor",
+        "errorCorrectionLevel"
+      ],
+      "toolName": "generate_verified_qr",
+      "webMcpAnnotations": [
+        "toolname",
+        "tooldescription",
+        "toolautosubmit",
+        "toolparamdescription",
+        "data-webmcp-context",
+        "data-webmcp-source"
+      ]
+    },
+    {
+      "id": "agent-generation-smoke",
+      "type": "form",
+      "path": "/qr-code-api",
+      "purpose": "Verify that automated agents can generate every supported QR content type across svg, png, jpg, webp, pdf, and eps",
+      "fields": [
+        "baseUrl",
+        "method",
+        "formats",
+        "contentTypes",
+        "apiKey"
+      ]
+    }
+  ]
+}

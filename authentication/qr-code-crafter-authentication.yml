@@ -1,0 +1,83 @@
+generated: '2026-08-11'
+method: searched
+source: openapi/qr-code-crafter-openapi-original.json
+docs: https://qrcodecrafter.com/ai.txt
+note: >-
+  Upgraded from the mechanical derive, which collapsed the two distinct bearer capability schemes into
+  one. There are three securitySchemes in the contract, and the difference between the two bearer
+  schemes matters: a record capability authorizes one redirect, a vault capability authorizes a
+  container and every child inside it. Also note the whole model has no accounts, no login, no user
+  identity and no OAuth — authorization is a bearer secret you hold, nothing more.
+summary:
+  types: [apiKey, http]
+  api_key_in: [header]
+  oauth2_flows: []
+  accounts_required: false
+  default_posture: open
+  note: >-
+    The OpenAPI declares no top-level `security` requirement, so the generation surface is open by
+    default and the management surface applies its scheme per operation.
+schemes:
+  - name: AgentApiKey
+    type: apiKey
+    in: header
+    parameter: X-Agent-Api-Key
+    required: conditional
+    description: >-
+      Optional issued key for scoped or rate-limited access. Requests without it continue to work
+      unless an administrator enables key enforcement for the deployment, in which case unauthenticated
+      calls return 401 with a WWW-Authenticate challenge.
+    effect: >-
+      Raises the cost budget from 180 to 600 units per 60-second window when enforcement is enabled.
+    obtained_by: Contact support@qrcodecrafter.com — keys are issued, not self-served and not sold.
+    applies_to: [downloadQr, generateQr, generateVerifiedQr, generateBulkQr, sendFeedback]
+    sources: [openapi/qr-code-crafter-openapi-original.json]
+  - name: DynamicQrBearer
+    type: http
+    scheme: bearer
+    bearerFormat: capability-token
+    token_pattern: '^[A-Za-z0-9_-]{43}$'
+    required: true
+    description: >-
+      Private 43-character management capability for ONE dynamic QR record, returned at creation or at
+      explicit token rotation and never retrievable afterwards.
+    applies_to: [getDynamicQr, updateDynamicQr, deleteDynamicQr]
+    sources: [openapi/qr-code-crafter-openapi-original.json]
+  - name: DynamicQrVaultBearer
+    type: http
+    scheme: bearer
+    bearerFormat: capability-token
+    token_pattern: '^[A-Za-z0-9_-]{43}$'
+    required: true
+    description: >-
+      Private 43-character vault capability returned only when the vault is created. It authorizes the
+      vault AND all nested records; child credentials are never issued or exposed.
+    applies_to:
+      - getDynamicQrVault
+      - updateDynamicQrVault
+      - deleteDynamicQrVault
+      - createDynamicQrVaultChild
+      - updateDynamicQrVaultChild
+      - getDynamicQrVaultChildAnalytics
+      - deleteDynamicQrVaultChild
+    sources: [openapi/qr-code-crafter-openapi-original.json]
+unauthenticated_operations:
+  - createDynamicQr
+  - createDynamicQrVault
+  - redirectDynamicQr
+  - headDynamicQr
+unauthenticated_operations_note: >-
+  Creation is deliberately anonymous — that is how a capability model bootstraps with no accounts.
+  The write is additionally protected against cross-origin abuse with a 403, and by rate limits.
+capability_model:
+  rotation: >-
+    PATCH with rotateToken:true returns a new managementToken and managementUrl once and immediately
+    invalidates the previous token.
+  recovery: none
+  recovery_note: >-
+    There is no password reset, no email recovery and no support path back to a lost capability. Losing
+    the token means the record keeps redirecting and can never be edited, paused or deleted. This is
+    the sharpest operational edge in the whole contract and every client should be built around it.
+  identifiers_are_not_credentials: >-
+    The 22-character slug and vaultId are public — the slug appears in the printed /r/{slug} URL. The
+    spec says outright that a vaultId is "not sufficient for authorization".

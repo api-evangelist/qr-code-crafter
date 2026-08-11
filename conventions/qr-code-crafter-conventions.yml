@@ -1,0 +1,124 @@
+generated: '2026-08-11'
+method: searched
+source: https://qrcodecrafter.com/ai.txt
+derived_from: openapi/qr-code-crafter-openapi-original.json
+docs:
+  - https://qrcodecrafter.com/qr-code-api
+  - https://qrcodecrafter.com/ai.txt
+  - https://qrcodecrafter.com/.well-known/webmcp.json
+
+authentication:
+  style: optional-api-key-plus-capability-bearer
+  summary: >-
+    Generation endpoints are open by default. An optional issued key goes in X-Agent-Api-Key and is
+    only enforced when an administrator turns enforcement on for a deployment. The dynamic-QR and
+    vault management surfaces use bearer capability tokens instead of accounts — there is no login,
+    no user identity and no OAuth.
+  see: authentication/qr-code-crafter-authentication.yml
+
+idempotency:
+  supported: partial
+  mechanism: conditional-request
+  idempotency_key_header: null
+  request_headers:
+    - name: If-Match
+      required: true
+      applies_to: [updateDynamicQr, deleteDynamicQr, updateDynamicQrVault, deleteDynamicQrVault, createDynamicQrVaultChild, updateDynamicQrVaultChild, deleteDynamicQrVaultChild]
+      description: Exact value returned by X-Dynamic-QR-Version, or the ETag when no intermediary rewrote it.
+    - name: X-Dynamic-QR-Version
+      required: false
+      description: Stable mirror of If-Match for intermediaries that rewrite or strip conditional headers.
+    - name: X-Dynamic-QR-Vault-Version
+      required: false
+      description: Stable mirror of the current vault ETag.
+  response_headers: [ETag, X-Dynamic-QR-Version, X-Dynamic-QR-Vault-Version]
+  failure_status: 412
+  retention: null
+  honest_reading: >-
+    Every write to a dynamic QR record or vault is version-guarded and therefore safely replayable: a
+    repeated PATCH or DELETE carrying a stale validator returns 412 instead of applying twice, and the
+    validator is mirrored on a second header specifically so proxies cannot break the contract. That
+    is a real, mandatory, machine-readable idempotency mechanism, and it covers all seven update and
+    delete operations. It does NOT cover creation: POST /api/dynamic-qr accepts no idempotency key, so
+    a retried create makes a second redirect. The provider states this plainly — the campaign workflow
+    is documented as "sequential ... with no automatic retry", and x-agent-workflows.dynamicQrCampaign
+    instructs agents to retain successful capabilities rather than replay a failed row. An agent
+    should treat updates/deletes as retry-safe and creates as at-most-once.
+  gap: >-
+    No Idempotency-Key on the four create operations (createDynamicQr, createDynamicQrVault,
+    createDynamicQrVaultChild) or on generation. Adding one would close the last retry-safety gap.
+
+pagination:
+  supported: false
+  note: >-
+    The API exposes no collection-listing operation — a vault read returns its children inline and is
+    hard-capped at 50 records, and there are 100,000 active records per deployment with no index
+    endpoint. There is therefore no pagination contract to document. Not a gap; a shape.
+
+field_expansion:
+  supported: false
+metadata:
+  supported: true
+  fields: [label]
+  note: A single free-text label (max 80 chars) per dynamic QR record. No arbitrary key/value metadata.
+
+request_tracing:
+  request_id_header: x-nf-request-id
+  method: probed
+  note: >-
+    Observed on live responses (Netlify platform header), not documented by the provider and not
+    declared in the OpenAPI. Agents should not depend on it contractually. The provider asks
+    integrations to identify themselves via User-Agent instead.
+
+versioning:
+  scheme: none
+  current: '1.0.0'
+  note: >-
+    info.version is 1.0.0 and there is no version segment in any path, no version header, and no date
+    pinning. The contract is a single unversioned surface; change notice is delivered out-of-band via
+    the Atom agent-update feed. See lifecycle/qr-code-crafter-lifecycle.yml.
+
+error_envelope:
+  media_type: application/json
+  shape: '{ "success": false, "error": "<message>" }'
+  rfc9457: false
+  see: errors/qr-code-crafter-problem-types.yml
+
+rate_limit_signaling:
+  model: cost-weighted soft budget per client
+  response_headers: [Retry-After, X-RateLimit-Limit, X-RateLimit-Remaining]
+  statuses: [429, 503]
+  header_availability: >-
+    Declared on the 429 responses in the OpenAPI and described in ai.txt as "when present". A live
+    unauthenticated 200 probe on 2026-08-11 returned no X-RateLimit-* headers, so the signal appears
+    only under pressure — an agent cannot read remaining budget proactively.
+  see: rate-limits/qr-code-crafter-rate-limits.yml
+
+concurrency:
+  optimistic_locking: true
+  validators: [ETag, X-Dynamic-QR-Version, X-Dynamic-QR-Vault-Version]
+  note: >-
+    The provider mirrors the ETag onto a proprietary header explicitly because "some development
+    proxies rewrite ETag". That detail is the clearest signal in this contract that it was designed
+    for automated clients.
+
+content_negotiation:
+  binary_direct: >-
+    GET /.netlify/functions/generate-qr returns raw asset bytes with X-QR-Width, X-QR-Height,
+    X-QR-Unit and X-QR-Bytes response headers (observed live: 200 image/svg+xml, x-qr-bytes 1535).
+  json_base64: POST returns dataUrl for previews plus base64 data for persistence.
+  bulk: Accept application/zip for direct ZIP bytes, or JSON for base64 ZIP metadata.
+  markdown_variants: >-
+    Public content pages advertise rel="alternate" type="text/markdown" and honor Accept:
+    text/markdown on the same URL, returning X-Markdown-Tokens and a Content-Signal header
+    (ai-train=yes, search=yes, ai-input=yes). Verified: the pricing page returns 8.8KB of markdown.
+
+cors:
+  allow_origin: '*'
+  allow_methods: [GET, POST, OPTIONS]
+  allow_headers: [Content-Type, Authorization, X-Agent-Api-Key]
+  expose_headers: [Content-Disposition, X-QR-Width, X-QR-Height, X-QR-Unit, X-QR-Bytes]
+  method: probed
+  note: >-
+    Observed on a live response 2026-08-11. Management writes additionally reject cross-origin
+    requests with 403 regardless of the permissive generation CORS policy.

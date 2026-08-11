@@ -1,0 +1,61 @@
+generated: '2026-08-11'
+method: searched
+source: https://qrcodecrafter.com/feeds/agent-updates.xml
+docs: https://qrcodecrafter.com/ai.txt
+format: atom
+title: QR Code Crafter Agent Updates
+feed_updated: '2026-07-22'
+scheme: dated-entries
+current_version: '1.0.0'
+note: >-
+  There is no HTML changelog page (/changelog 404s). The provider's change notice is an Atom feed
+  aimed explicitly at agent integrations — a machine-readable changelog, which is rarer and more
+  useful than a blog-styled one. Entries are undated by semantic version; each carries a tag: URI, an
+  ISO timestamp and a deep link. The full window published as of this pass is four entries; nothing is
+  truncated here.
+entries:
+  - id: tag:qrcodecrafter.com,2026-07-22:readability-benchmark-v1
+    date: '2026-07-22'
+    title: Versioned QR export readability benchmark
+    type: addition
+    breaking: false
+    highlights:
+      - 21 controlled PNG, JPG, WebP and rendered-SVG fixtures with exact-decode results
+      - Machine-readable JSON and CSV results, ZIP release, methodology, SHA-256 manifest
+      - BibTeX, RIS and CFF citation records
+    link: https://qrcodecrafter.com/qr-code-safety-lab#export-readability-benchmark
+  - id: tag:qrcodecrafter.com,2026-06-01:asset-metadata-verification
+    date: '2026-06-01'
+    title: QR asset metadata and dimension verification
+    type: addition
+    breaking: false
+    highlights:
+      - POST responses now include byteLength, dimensions and normalized qrOptions
+      - GET responses expose X-QR-Width, X-QR-Height, X-QR-Unit and X-QR-Bytes
+    link: https://qrcodecrafter.com/qr-code-api
+  - id: tag:qrcodecrafter.com,2025-09-20:optional-agent-api-key
+    date: '2025-09-20'
+    title: Optional API key support for agent integrations
+    type: addition
+    breaking: false
+    highlights:
+      - Optional X-Agent-Api-Key header on POST /.netlify/functions/generate-qr
+      - When an administrator configures a key, unauthenticated calls return 401 with a WWW-Authenticate challenge
+    link: https://qrcodecrafter.com/
+  - id: tag:qrcodecrafter.com,2025-09-18:openapi-sync
+    date: '2025-09-18'
+    title: OpenAPI and AI guidance synchronization scripts
+    type: addition
+    breaking: false
+    highlights:
+      - /.well-known/openapi.json is now published automatically from the canonical YAML source
+      - ai.txt guidance mirrored for cross-ecosystem agent discovery
+    link: https://qrcodecrafter.com/
+breaking_changes_published: 0
+x-evidence:
+  - url: https://qrcodecrafter.com/feeds/agent-updates.xml
+    http_status: 200
+    fetched: '2026-08-11'
+  - url: https://qrcodecrafter.com/changelog
+    http_status: 404
+    fetched: '2026-08-11'

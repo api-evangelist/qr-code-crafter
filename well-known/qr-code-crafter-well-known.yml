@@ -1,0 +1,64 @@
+generated: '2026-08-11'
+method: probed
+source: https://qrcodecrafter.com/.well-known/
+host: https://qrcodecrafter.com
+note: >-
+  The provider serves a real /.well-known/ discovery surface — the OpenAPI contract itself, an
+  OpenAI-style ai-plugin manifest, and a WebMCP browser-agent context document all return 200 with
+  parseable JSON. The RFC 9116 security.txt, RFC 8414 / OIDC discovery, and RFC 9727 api-catalog
+  paths all 404; a 404 here is a recorded absence, not a failed probe. The A2A agent-card paths
+  (canonical and legacy) also 404, so no a2a/ artifact was written.
+documents:
+  - path: /.well-known/openapi.json
+    status: 200
+    content_type: application/json
+    file: ../openapi/qr-code-crafter-openapi-original.json
+    note: OpenAPI 3.0.1, 12 paths / 19 operations. The primary machine-readable contract.
+  - path: /.well-known/ai-plugin.json
+    status: 200
+    content_type: application/json
+    file: qr-code-crafter-ai-plugin.json
+    note: >-
+      schema_version v1; auth type none; points api.url at /.well-known/openapi.json and carries a
+      non-standard x-webmcp-context-url extension.
+  - path: /.well-known/webmcp.json
+    status: 200
+    content_type: application/json
+    file: qr-code-crafter-webmcp.json
+    note: >-
+      WebMCP context 1.0.0 (lastUpdated 2026-07-12) — 8 browser-registered tools with inputSchemas
+      and 53 declarative form components. Not an MCP JSON-RPC server; see mcp/.
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+  - path: /.well-known/mcp.json
+    status: 404
+related:
+  - path: /apis.json
+    status: 200
+    file: qr-code-crafter-remote-apis.json
+    note: >-
+      Provider-published APIs.json 0.21 index (aid qrcodecrafter.com:api-index, modified 2026-08-08).
+      Not a /.well-known/ path but the same discovery surface — the provider maintains its own
+      APIs.json, which is unusual and worth recording.
+  - path: /llms.txt
+    status: 200
+    file: ../llms/qr-code-crafter-llms.txt
+  - path: /ai.txt
+    status: 200
+    file: ../llms/qr-code-crafter-ai.txt
+  - path: /openapi.yaml
+    status: 200
+    note: YAML twin of the JSON contract, with examples and agent-recipe extensions.
+  - path: /feeds/agent-updates.xml
+    status: 200
+    note: Atom feed of agent-facing change notices; see changelog/.

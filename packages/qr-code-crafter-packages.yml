@@ -1,0 +1,82 @@
+generated: '2026-08-11'
+method: searched
+source: >-
+  Registry metadata endpoints (registry.npmjs.org, pypi.org, api.github.com) plus the provider's own
+  llms.txt, ai.txt, apis.json and API documentation page.
+package_count: 0
+packages: []
+note: >-
+  QR Code Crafter ships NO first-party client library in any language. This was checked, not assumed.
+  Neither llms.txt nor ai.txt nor the provider's own apis.json lists an SDK, a client library, a
+  GitHub organization or a source repository — the published integration surface is the raw HTTP
+  contract, the WebMCP browser tools, and copy-paste recipes on /qr-code-api. Given a 19-operation
+  API with no auth on the generation path, that is a defensible choice rather than an obvious gap,
+  but it does mean an integrator writes their own HTTP client.
+registries_checked:
+  - registry: npm
+    query: registry.npmjs.org/qrcodecrafter
+    status: 404
+    version: null
+  - registry: npm
+    query: registry.npmjs.org/qr-code-crafter
+    status: 200
+    version: null
+    published: null
+    first_party: false
+    note: >-
+      Name exists but is fully UNPUBLISHED — five versions 1.0.0–1.0.4 released 2023-05-11 and all
+      unpublished 2023-05-14, two years before qrcodecrafter.com's first agent-update entry. There is
+      no dist-tags, no description, no repository and no homepage. Unrelated to this provider; not a
+      package a consumer can install.
+  - registry: npm
+    query: registry.npmjs.org/-/v1/search?text=qrcodecrafter
+    status: 200
+    results: 0
+  - registry: npm
+    query: registry.npmjs.org/@qrcodecrafter/sdk
+    status: 404
+    version: null
+  - registry: pypi
+    query: pypi.org/pypi/qrcodecrafter/json
+    status: 404
+    version: null
+  - registry: pypi
+    query: pypi.org/pypi/qr-code-crafter/json
+    status: 404
+    version: null
+  - registry: github
+    query: api.github.com/orgs/qrcodecrafter
+    status: 404
+  - registry: github
+    query: api.github.com/orgs/brandaspect
+    status: 404
+  - registry: github
+    query: api.github.com/search/repositories?q=qrcodecrafter
+    status: 200
+    results: 1
+    first_party: false
+    note: >-
+      The single hit is Mortens4444/QRCodeCrafter, an unrelated third-party project. ai.txt refers to
+      "the public repository history" for change detail, but no repository URL is published anywhere
+      on the site, in apis.json, or in llms.txt — so the referenced repo could not be located.
+distributed_artifacts_note: >-
+  Not client libraries, but the provider does publish pinned, checksummed downloadable artifacts —
+  recorded here because they are the closest thing to a versioned distribution it ships.
+distributed_artifacts:
+  - name: qr-readability-lab-v1-release.zip
+    kind: dataset-release
+    url: https://qrcodecrafter.com/data/qr-readability-lab-v1-release.zip
+    version: v1
+    published: '2026-07-22'
+    registry: provider-hosted
+    checksums: https://qrcodecrafter.com/data/qr-readability-lab-v1-manifest.json
+  - name: qr-readability-lab-v1-reproducer.zip
+    kind: reproducer
+    url: https://qrcodecrafter.com/data/qr-readability-lab-v1-reproducer.zip
+    version: v1
+    published: '2026-07-22'
+    registry: provider-hosted
+    checksums: https://qrcodecrafter.com/data/qr-readability-lab-v1-reproducer-manifest.json
+    note: >-
+      A pinned Node.js project that regenerates and verifies the eight published v1 artifacts without
+      access to the private application repository. Distributed as a versioned ZIP, not via npm.

@@ -1,0 +1,87 @@
+generated: '2026-08-11'
+method: searched
+source: openapi/qr-code-crafter-openapi-original.json#/components/schemas/GenerateQrRequest/x-agent-rate-limit
+docs:
+  - https://qrcodecrafter.com/qr-code-api-pricing
+  - https://qrcodecrafter.com/ai.txt
+model: cost-weighted soft budget per client
+limit_count: 5
+note: >-
+  The prose surfaces (pricing page, ai.txt) describe the SHAPE of the limit but never state a number.
+  The numbers are published — inside the OpenAPI, on a vendor extension:
+  components.schemas.GenerateQrRequest.x-agent-rate-limit carries the window, both budget ceilings, the
+  retry headers, and a full per-format cost table. That is the machine-readable rate-limit contract most
+  providers never write down, and it is recorded verbatim below. A reader who only skims the pricing
+  page would wrongly conclude the limits are undocumented.
+limits:
+  - scope: per-client
+    surface: QR generation (downloadQr, generateQr, generateVerifiedQr, generateBulkQr)
+    window: 60
+    window_unit: seconds
+    limit: 180
+    limit_authenticated: 600
+    unit: cost-budget units
+    burst: null
+    cost_units:
+      svg: 1
+      png: 3
+      eps: 3
+      jpg: 4
+      webp: 4
+      logo: 4
+      pdf: 6
+      sizeOver2048: 2
+      sizeOver3072: 4
+    cost_note: >-
+      Costs compose — a 3072px PDF with an embedded logo bills 6 + 4 + 4 = 14 units against the budget.
+      At the anonymous ceiling that is roughly 12 such requests per minute, against 180 plain SVGs.
+    uplift: >-
+      A valid issued X-Agent-Api-Key raises the ceiling from 180 to 600 units per 60s window when key
+      enforcement is enabled for the deployment.
+    guidance: >-
+      Provider's own words: "Prefer SVG for high-volume tests, throttle batch jobs, and honor
+      Retry-After before retrying 429 or 503 responses."
+  - scope: per-request
+    surface: generateBulkQr
+    limit: 50
+    unit: rows per request
+    note: Hard cap. Also bounded by a total generated-ZIP size ceiling enforced with 413.
+  - scope: per-workflow
+    surface: create_dynamic_qr_campaign
+    limit: 5
+    unit: records per campaign
+    note: >-
+      Executed as sequential POSTs with no automatic retry; partial success returns a private manifest.
+  - scope: per-deployment
+    surface: dynamic QR storage
+    limit: 100000
+    unit: active records
+    note: >-
+      Hard active-record capacity. Exhaustion returns 503 on createDynamicQr. Vaults hold up to 50
+      child records each; daily analytics buckets are retained 90 days with a 100,000 daily count cap.
+response_headers:
+  - name: Retry-After
+    description: Seconds to wait before retrying.
+    emitted_on: [429, 503]
+  - name: X-RateLimit-Limit
+    description: Cost budget units available in the current window for this client class.
+    emitted_on: [429]
+  - name: X-RateLimit-Remaining
+    description: Cost budget units remaining in the current window.
+    emitted_on: [429]
+exhaustion:
+  statuses: [429, 503]
+  guidance: >-
+    ai.txt instructs agents to back off on 429 or 503, honor Retry-After, and read X-RateLimit-Limit /
+    X-RateLimit-Remaining "when present" before retrying batch or agent jobs. The 429 responses in the
+    OpenAPI declare all three headers explicitly, which is better than most specs in the catalog.
+x-evidence:
+  - url: https://qrcodecrafter.com/.netlify/functions/generate-qr?value=https%3A%2F%2Fexample.com&format=svg
+    http_status: 200
+    fetched: '2026-08-11'
+    observed: >-
+      No X-RateLimit-* or RateLimit-* headers on an unthrottled 200 — only X-QR-Width/Height/Unit/Bytes.
+      The budget signal is reactive (returned at exhaustion), not proactive.
+  - url: https://qrcodecrafter.com/qr-code-api-pricing
+    http_status: 200
+    fetched: '2026-08-11'

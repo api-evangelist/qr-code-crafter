@@ -1,0 +1,180 @@
+generated: '2026-08-11'
+method: derived
+source: openapi/qr-code-crafter-openapi-original.json
+docs: https://qrcodecrafter.com/qr-code-api
+format: custom-json
+envelope:
+  media_type: application/json
+  schema: '#/components/schemas/Error'
+  fields:
+    - name: success
+      type: boolean
+      note: Always false on an error response.
+    - name: error
+      type: string
+      note: Human-readable message. There is no machine-readable error code or type URI.
+  rfc9457: false
+  note: >-
+    QR Code Crafter does NOT use RFC 9457 problem+json. Every 4xx/5xx returns application/json with a
+    flat {success:false, error:"..."} envelope. That is honest and consistent across all 19
+    operations, but an agent cannot branch on a stable code — only on the HTTP status and free text.
+    Adopting problem+json with a `type` URI per condition is the single highest-value error-semantics
+    improvement available to this provider.
+  redirect_exception: >-
+    The scan-time redirect operations (redirectDynamicQr, headDynamicQr) return no body at all on
+    404/410/429/503 — status code only.
+problems:
+  - status: 400
+    title: Invalid request
+    conditions:
+      - Invalid or missing payload value, unsupported format, or out-of-range size/margin.
+      - Invalid JSON, unsupported fields, unsafe (non-HTTPS) destination, or invalid label on dynamic QR.
+      - Non-decodable output format requested for verification (PDF/EPS cannot be decode-checked).
+      - Invalid batch request or row data on bulk generation.
+    source_operations:
+      - downloadQr
+      - generateQr
+      - generateVerifiedQr
+      - generateBulkQr
+      - createDynamicQr
+      - updateDynamicQr
+      - createDynamicQrVault
+      - createDynamicQrVaultChild
+  - status: 401
+    title: Missing or invalid credential
+    conditions:
+      - Missing or invalid X-Agent-Api-Key when key enforcement is enabled on the deployment.
+      - Missing, malformed, or invalid dynamic QR capability bearer token.
+      - Invalid vault capability bearer token.
+    remediation: >-
+      Retry with the issued X-Agent-Api-Key header, or with Authorization: Bearer {managementToken}.
+      A WWW-Authenticate challenge is returned when an administrator has enabled key enforcement.
+    source_operations:
+      - downloadQr
+      - generateQr
+      - generateVerifiedQr
+      - generateBulkQr
+      - sendFeedback
+      - getDynamicQr
+      - updateDynamicQr
+      - deleteDynamicQr
+      - getDynamicQrVault
+      - updateDynamicQrVault
+      - deleteDynamicQrVault
+      - createDynamicQrVaultChild
+      - updateDynamicQrVaultChild
+      - getDynamicQrVaultChildAnalytics
+      - deleteDynamicQrVaultChild
+  - status: 403
+    title: Cross-origin management write rejected
+    conditions:
+      - A management write was attempted from a disallowed origin.
+    source_operations: [createDynamicQr, updateDynamicQr, deleteDynamicQr, createDynamicQrVault]
+  - status: 404
+    title: Not found
+    conditions:
+      - Dynamic QR slug does not exist.
+      - Child record is not owned by this vault.
+    source_operations:
+      - redirectDynamicQr
+      - updateDynamicQrVaultChild
+      - getDynamicQrVaultChildAnalytics
+      - deleteDynamicQrVaultChild
+  - status: 405
+    title: Method not allowed
+    source_operations: [downloadQr, generateQr, generateBulkQr, createDynamicQr, getDynamicQr, redirectDynamicQr]
+  - status: 409
+    title: Vault is not empty
+    conditions:
+      - Delete was attempted on a vault that still owns child records.
+    remediation: Delete every child record first, then delete the vault.
+    source_operations: [deleteDynamicQrVault]
+  - status: 410
+    title: Destination gone
+    conditions:
+      - The dynamic QR destination is owner-paused or operator-blocked.
+    source_operations: [redirectDynamicQr]
+  - status: 412
+    title: Missing or stale record version
+    conditions:
+      - If-Match / X-Dynamic-QR-Version absent or does not match the current record version.
+      - Vault or child ETag stale.
+    remediation: >-
+      GET the record, read ETag and X-Dynamic-QR-Version (or X-Dynamic-QR-Vault-Version), and replay
+      the write with the current value. This is the optimistic-concurrency contract, and it is
+      mandatory — every write requires If-Match.
+    source_operations:
+      - updateDynamicQr
+      - deleteDynamicQr
+      - updateDynamicQrVault
+      - deleteDynamicQrVault
+      - createDynamicQrVaultChild
+      - updateDynamicQrVaultChild
+      - deleteDynamicQrVaultChild
+  - status: 413
+    title: Payload too large
+    conditions:
+      - Batch request or generated ZIP exceeds the size ceiling.
+    remediation: Split the batch; prefer SVG for large batches.
+    source_operations: [generateBulkQr]
+  - status: 422
+    title: Verification failed
+    conditions:
+      - Payload blocked before generation by the safe-payload review.
+      - Final asset failed decode, or the decoded payload hash did not match the requested value.
+    note: >-
+      Two distinct response schemas back this status — GenerateVerifiedQrBlockedResponse (blocked
+      pre-generation) and GenerateVerifiedQrFailureResponse (failed post-generation decode).
+    source_operations: [generateVerifiedQr]
+  - status: 423
+    title: Record locked by operator
+    conditions:
+      - The record is operator-blocked and cannot be updated or resumed by its capability holder.
+    source_operations: [updateDynamicQr]
+  - status: 429
+    title: Rate limit exceeded
+    conditions:
+      - Cost-weighted per-client generation budget exhausted.
+      - Verification concurrency limit reached.
+      - Batch cost exceeds the current budget.
+      - Dynamic QR create / management / redirect rate limit exceeded.
+    response_headers: [Retry-After, X-RateLimit-Limit, X-RateLimit-Remaining]
+    remediation: >-
+      Back off for Retry-After seconds; read X-RateLimit-Limit / X-RateLimit-Remaining before
+      resubmitting batch or agent jobs. See rate-limits/qr-code-crafter-rate-limits.yml.
+    source_operations:
+      - downloadQr
+      - generateQr
+      - generateVerifiedQr
+      - generateBulkQr
+      - createDynamicQr
+      - deleteDynamicQr
+      - redirectDynamicQr
+  - status: 500
+    title: Server error
+    conditions:
+      - Generation or verification pipeline error.
+      - No QR files could be generated in the batch.
+    source_operations: [downloadQr, generateQr, generateVerifiedQr, generateBulkQr, sendFeedback]
+  - status: 503
+    title: Storage unavailable
+    conditions:
+      - Dynamic QR or vault storage unavailable, or the hard active-record capacity (100,000) reached.
+    remediation: >-
+      Treat as retryable with backoff. On update/delete the provider states explicitly that no record
+      was changed / deletion was not confirmed, so a retry is safe.
+    source_operations:
+      - createDynamicQr
+      - getDynamicQr
+      - updateDynamicQr
+      - deleteDynamicQr
+      - createDynamicQrVault
+      - getDynamicQrVaultChildAnalytics
+      - redirectDynamicQr
+coverage:
+  operations_total: 19
+  distinct_statuses: 14
+  operations_with_4xx: 18
+  note: >-
+    Every operation except headDynamicQr documents at least one error response, which is unusually
+    complete for a spec this size.

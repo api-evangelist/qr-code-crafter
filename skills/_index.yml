@@ -1,0 +1,43 @@
+generated: '2026-08-11'
+method: generated
+source: >-
+  Generated from openapi/qr-code-crafter-openapi-original.json plus the conventions/, errors/,
+  rate-limits/ and data-model/ artifacts in this repo. Every operationId referenced in every skill was
+  grepped against the spec before it was written; none are invented. The provider publishes no
+  AGENTS.md or skill files of its own — its agent guidance is ai.txt and the WebMCP context, which are
+  captured verbatim in llms/ and well-known/ rather than restated here.
+api: openapi/qr-code-crafter-openapi-original.json
+skill_count: 4
+skills:
+  - file: qr-code-crafter-generate-static-qr.md
+    name: Generate a static QR code asset
+    api: openapi/qr-code-crafter-openapi-original.json
+    operations: [generateQr, downloadQr]
+  - file: qr-code-crafter-generate-and-verify.md
+    name: Generate and verify a production QR candidate
+    api: openapi/qr-code-crafter-openapi-original.json
+    operations: [generateVerifiedQr]
+  - file: qr-code-crafter-manage-dynamic-qr.md
+    name: Create and manage a dynamic QR redirect
+    api: openapi/qr-code-crafter-openapi-original.json
+    operations: [createDynamicQr, getDynamicQr, updateDynamicQr, deleteDynamicQr, redirectDynamicQr]
+  - file: qr-code-crafter-bulk-and-vaults.md
+    name: Bulk generation and capability-managed vaults
+    api: openapi/qr-code-crafter-openapi-original.json
+    operations:
+      - generateBulkQr
+      - createDynamicQrVault
+      - getDynamicQrVault
+      - updateDynamicQrVault
+      - deleteDynamicQrVault
+      - createDynamicQrVaultChild
+      - updateDynamicQrVaultChild
+      - getDynamicQrVaultChildAnalytics
+      - deleteDynamicQrVaultChild
+coverage:
+  operations_total: 19
+  operations_covered: 17
+  uncovered: [sendFeedback, headDynamicQr]
+  note: >-
+    sendFeedback is a human feedback form with no agent use case; headDynamicQr is the HEAD twin of the
+    public redirect and needs no separate instruction.
