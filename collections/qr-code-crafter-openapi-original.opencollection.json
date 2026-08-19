@@ -1,0 +1,563 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "QRCodeCrafter API",
+    "version": "1.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Download a QR code asset via Netlify Function",
+        "type": "http"
+      },
+      "http": {
+        "method": "GET",
+        "url": "https://qrcodecrafter.com/.netlify/functions/generate-qr",
+        "params": [
+          {
+            "name": "value",
+            "value": "",
+            "type": "query",
+            "description": "Text, URL, or payload encoded in the QR code"
+          },
+          {
+            "name": "format",
+            "value": "",
+            "type": "query",
+            "description": "Output format for the QR code asset"
+          },
+          {
+            "name": "size",
+            "value": "",
+            "type": "query",
+            "description": "Width and height of the generated asset in pixels"
+          },
+          {
+            "name": "margin",
+            "value": "",
+            "type": "query",
+            "description": "Quiet-zone margin around the QR code modules"
+          },
+          {
+            "name": "bgColor",
+            "value": "",
+            "type": "query",
+            "description": "Background color in hex format, for example #FFFFFF"
+          },
+          {
+            "name": "fgColor",
+            "value": "",
+            "type": "query",
+            "description": "Foreground color in hex format, for example #000000"
+          },
+          {
+            "name": "errorCorrectionLevel",
+            "value": "",
+            "type": "query",
+            "description": "Error correction level for QR encoding"
+          },
+          {
+            "name": "logo",
+            "value": "",
+            "type": "query",
+            "description": "Optional base64 PNG, JPG, or WebP data URL for an embedded logo"
+          }
+        ],
+        "auth": {
+          "type": "apikey",
+          "key": "X-Agent-Api-Key",
+          "value": "{{X-Agent-Api-Key}}",
+          "placement": "header"
+        }
+      },
+      "docs": "Download a QR code asset via Netlify Function"
+    },
+    {
+      "info": {
+        "name": "Generate a QR code asset via Netlify Function",
+        "type": "http"
+      },
+      "http": {
+        "method": "POST",
+        "url": "https://qrcodecrafter.com/.netlify/functions/generate-qr",
+        "body": {
+          "type": "json",
+          "data": "{}"
+        },
+        "auth": {
+          "type": "apikey",
+          "key": "X-Agent-Api-Key",
+          "value": "{{X-Agent-Api-Key}}",
+          "placement": "header"
+        }
+      },
+      "docs": "Generate a QR code asset via Netlify Function"
+    },
+    {
+      "info": {
+        "name": "Generate and verify a QR code asset",
+        "type": "http"
+      },
+      "http": {
+        "method": "POST",
+        "url": "https://qrcodecrafter.com/.netlify/functions/generate-verified-qr",
+        "body": {
+          "type": "json",
+          "data": "{}"
+        },
+        "auth": {
+          "type": "apikey",
+          "key": "X-Agent-Api-Key",
+          "value": "{{X-Agent-Api-Key}}",
+          "placement": "header"
+        }
+      },
+      "docs": "Generate one SVG, PNG, JPG, or WebP asset, perform a structural payload review, assess quiet-zone, contrast, and error-correction settings, decode the final generated file with jsQR, compare payload SHA-256 hashes, and return a bounded evidence-linked receipt. Asset bytes are returned only when final-file decoding matches the requested payload. A decode failure returns HTTP 422 with the full receipt and no asset bytes. The receipt does not include the decoded payload. This is not print, device, "
+    },
+    {
+      "info": {
+        "name": "Generate a ZIP archive of static QR code files",
+        "type": "http"
+      },
+      "http": {
+        "method": "POST",
+        "url": "https://qrcodecrafter.com/.netlify/functions/generate-qr-bulk",
+        "body": {
+          "type": "json",
+          "data": "{}"
+        },
+        "auth": {
+          "type": "apikey",
+          "key": "X-Agent-Api-Key",
+          "value": "{{X-Agent-Api-Key}}",
+          "placement": "header"
+        }
+      },
+      "docs": "Create a ZIP archive containing up to 50 static QR code assets plus manifest.csv and manifest.json. Use this for spreadsheet, label, classroom, packaging, and agent batch workflows. The endpoint uses the same QR validation, optional API key, security headers, and cost-weighted rate-limit model as the single-code generator."
+    },
+    {
+      "info": {
+        "name": "Send user feedback",
+        "type": "http"
+      },
+      "http": {
+        "method": "POST",
+        "url": "https://qrcodecrafter.com/api/send-feedback",
+        "body": {
+          "type": "json",
+          "data": "{}"
+        },
+        "auth": {
+          "type": "apikey",
+          "key": "X-Agent-Api-Key",
+          "value": "{{X-Agent-Api-Key}}",
+          "placement": "header"
+        }
+      },
+      "docs": "Send user feedback"
+    },
+    {
+      "info": {
+        "name": "Create a private dynamic QR redirect",
+        "type": "http"
+      },
+      "http": {
+        "method": "POST",
+        "url": "https://qrcodecrafter.com/api/dynamic-qr",
+        "body": {
+          "type": "json",
+          "data": "{}"
+        }
+      },
+      "docs": "Creates an editable HTTPS destination. The management token is returned only in this response; store it as a secret capability."
+    },
+    {
+      "info": {
+        "name": "Read a dynamic QR record",
+        "type": "http"
+      },
+      "http": {
+        "method": "GET",
+        "url": "https://qrcodecrafter.com/api/dynamic-qr/:slug",
+        "params": [
+          {
+            "name": "slug",
+            "value": "",
+            "type": "path",
+            "description": "22-character dynamic QR identifier"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "token": "{{bearerToken}}"
+        }
+      },
+      "docs": "Read a dynamic QR record"
+    },
+    {
+      "info": {
+        "name": "Update a dynamic QR record",
+        "type": "http"
+      },
+      "http": {
+        "method": "PATCH",
+        "url": "https://qrcodecrafter.com/api/dynamic-qr/:slug",
+        "headers": [
+          {
+            "name": "If-Match",
+            "value": ""
+          },
+          {
+            "name": "X-Dynamic-QR-Version",
+            "value": ""
+          }
+        ],
+        "params": [
+          {
+            "name": "slug",
+            "value": "",
+            "type": "path",
+            "description": "22-character dynamic QR identifier"
+          }
+        ],
+        "body": {
+          "type": "json",
+          "data": "{}"
+        },
+        "auth": {
+          "type": "bearer",
+          "token": "{{bearerToken}}"
+        }
+      },
+      "docs": "Requires the current ETag in If-Match. Set rotateToken to true to replace the bearer capability; the old token is immediately invalid."
+    },
+    {
+      "info": {
+        "name": "Permanently delete a dynamic QR record",
+        "type": "http"
+      },
+      "http": {
+        "method": "DELETE",
+        "url": "https://qrcodecrafter.com/api/dynamic-qr/:slug",
+        "headers": [
+          {
+            "name": "If-Match",
+            "value": ""
+          },
+          {
+            "name": "X-Dynamic-QR-Version",
+            "value": ""
+          }
+        ],
+        "params": [
+          {
+            "name": "slug",
+            "value": "",
+            "type": "path",
+            "description": "22-character dynamic QR identifier"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "token": "{{bearerToken}}"
+        }
+      },
+      "docs": "Requires the current ETag in If-Match. Deletion is irreversible and the printed redirect URL will return 404."
+    },
+    {
+      "info": {
+        "name": "Create a capability-managed dynamic QR vault",
+        "type": "http"
+      },
+      "http": {
+        "method": "POST",
+        "url": "https://qrcodecrafter.com/api/dynamic-qr-vaults",
+        "body": {
+          "type": "json",
+          "data": "{}"
+        }
+      },
+      "docs": "Creates a private no-account vault for up to 50 project-owned redirects. The vault management token is returned only by this operation and is never recoverable."
+    },
+    {
+      "info": {
+        "name": "Read an authorized dynamic QR vault and its public child records",
+        "type": "http"
+      },
+      "http": {
+        "method": "GET",
+        "url": "https://qrcodecrafter.com/api/dynamic-qr-vaults/:vaultId",
+        "params": [
+          {
+            "name": "vaultId",
+            "value": "",
+            "type": "path",
+            "description": "22-character vault identifier; not sufficient for authorization"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "token": "{{bearerToken}}"
+        }
+      },
+      "docs": "Read an authorized dynamic QR vault and its public child records"
+    },
+    {
+      "info": {
+        "name": "Rename a dynamic QR vault",
+        "type": "http"
+      },
+      "http": {
+        "method": "PATCH",
+        "url": "https://qrcodecrafter.com/api/dynamic-qr-vaults/:vaultId",
+        "headers": [
+          {
+            "name": "If-Match",
+            "value": ""
+          },
+          {
+            "name": "X-Dynamic-QR-Vault-Version",
+            "value": ""
+          }
+        ],
+        "params": [
+          {
+            "name": "vaultId",
+            "value": "",
+            "type": "path",
+            "description": "22-character vault identifier; not sufficient for authorization"
+          }
+        ],
+        "body": {
+          "type": "json",
+          "data": "{}"
+        },
+        "auth": {
+          "type": "bearer",
+          "token": "{{bearerToken}}"
+        }
+      },
+      "docs": "Requires the current vault ETag in If-Match or X-Dynamic-QR-Vault-Version."
+    },
+    {
+      "info": {
+        "name": "Delete an empty dynamic QR vault",
+        "type": "http"
+      },
+      "http": {
+        "method": "DELETE",
+        "url": "https://qrcodecrafter.com/api/dynamic-qr-vaults/:vaultId",
+        "headers": [
+          {
+            "name": "If-Match",
+            "value": ""
+          },
+          {
+            "name": "X-Dynamic-QR-Vault-Version",
+            "value": ""
+          }
+        ],
+        "params": [
+          {
+            "name": "vaultId",
+            "value": "",
+            "type": "path",
+            "description": "22-character vault identifier; not sufficient for authorization"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "token": "{{bearerToken}}"
+        }
+      },
+      "docs": "Requires the current vault ETag. Deletion is non-cascading and fails while the vault contains child records."
+    },
+    {
+      "info": {
+        "name": "Create a project-owned dynamic QR record",
+        "type": "http"
+      },
+      "http": {
+        "method": "POST",
+        "url": "https://qrcodecrafter.com/api/dynamic-qr-vaults/:vaultId/qr",
+        "headers": [
+          {
+            "name": "If-Match",
+            "value": ""
+          },
+          {
+            "name": "X-Dynamic-QR-Vault-Version",
+            "value": ""
+          }
+        ],
+        "params": [
+          {
+            "name": "vaultId",
+            "value": "",
+            "type": "path",
+            "description": "22-character vault identifier; not sufficient for authorization"
+          }
+        ],
+        "body": {
+          "type": "json",
+          "data": "{}"
+        },
+        "auth": {
+          "type": "bearer",
+          "token": "{{bearerToken}}"
+        }
+      },
+      "docs": "Requires the current vault ETag. The child is controlled only by the vault capability; no child token or token hash is returned."
+    },
+    {
+      "info": {
+        "name": "Update, pause, or resume a project-owned dynamic QR record",
+        "type": "http"
+      },
+      "http": {
+        "method": "PATCH",
+        "url": "https://qrcodecrafter.com/api/dynamic-qr-vaults/:vaultId/qr/:slug",
+        "headers": [
+          {
+            "name": "If-Match",
+            "value": ""
+          },
+          {
+            "name": "X-Dynamic-QR-Version",
+            "value": ""
+          }
+        ],
+        "params": [
+          {
+            "name": "vaultId",
+            "value": "",
+            "type": "path",
+            "description": "22-character vault identifier; not sufficient for authorization"
+          },
+          {
+            "name": "slug",
+            "value": "",
+            "type": "path",
+            "description": "22-character dynamic QR identifier"
+          }
+        ],
+        "body": {
+          "type": "json",
+          "data": "{}"
+        },
+        "auth": {
+          "type": "bearer",
+          "token": "{{bearerToken}}"
+        }
+      },
+      "docs": "Requires the current child ETag in If-Match or X-Dynamic-QR-Version. The vault version is returned separately when successful."
+    },
+    {
+      "info": {
+        "name": "Read aggregate analytics for one project-owned dynamic QR record",
+        "type": "http"
+      },
+      "http": {
+        "method": "GET",
+        "url": "https://qrcodecrafter.com/api/dynamic-qr-vaults/:vaultId/qr/:slug/analytics",
+        "params": [
+          {
+            "name": "vaultId",
+            "value": "",
+            "type": "path",
+            "description": "22-character vault identifier; not sufficient for authorization"
+          },
+          {
+            "name": "slug",
+            "value": "",
+            "type": "path",
+            "description": "22-character dynamic QR identifier"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "token": "{{bearerToken}}"
+        }
+      },
+      "docs": "Requires the private vault bearer capability and verifies that the selected child belongs to the vault. Returns approximate aggregate redirect counts only; no visitor identifiers, IP addresses, user agents, referrers, cookies, locations, or device data are stored."
+    },
+    {
+      "info": {
+        "name": "Permanently delete a project-owned dynamic QR record",
+        "type": "http"
+      },
+      "http": {
+        "method": "DELETE",
+        "url": "https://qrcodecrafter.com/api/dynamic-qr-vaults/:vaultId/qr/:slug/analytics",
+        "headers": [
+          {
+            "name": "If-Match",
+            "value": ""
+          },
+          {
+            "name": "X-Dynamic-QR-Version",
+            "value": ""
+          }
+        ],
+        "params": [
+          {
+            "name": "vaultId",
+            "value": "",
+            "type": "path",
+            "description": "22-character vault identifier; not sufficient for authorization"
+          },
+          {
+            "name": "slug",
+            "value": "",
+            "type": "path",
+            "description": "22-character dynamic QR identifier"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "token": "{{bearerToken}}"
+        }
+      },
+      "docs": "Requires the current child ETag. Deletion also removes vault membership and returns the new vault validator."
+    },
+    {
+      "info": {
+        "name": "Redirect a dynamic QR scan",
+        "type": "http"
+      },
+      "http": {
+        "method": "GET",
+        "url": "https://qrcodecrafter.com/r/:slug",
+        "params": [
+          {
+            "name": "slug",
+            "value": "",
+            "type": "path",
+            "description": "22-character dynamic QR identifier"
+          }
+        ]
+      },
+      "docs": "Public redirect. When aggregate analytics are enabled, only the slug and UTC count bucket are retained; no IP address, user agent, referrer, cookie, location, device data, or tracking parameter is stored."
+    },
+    {
+      "info": {
+        "name": "Check a dynamic QR redirect without a response body",
+        "type": "http"
+      },
+      "http": {
+        "method": "HEAD",
+        "url": "https://qrcodecrafter.com/r/:slug",
+        "params": [
+          {
+            "name": "slug",
+            "value": "",
+            "type": "path",
+            "description": "22-character dynamic QR identifier"
+          }
+        ]
+      },
+      "docs": "Returns the same status and Location headers as GET without a response body."
+    }
+  ],
+  "bundled": true
+}

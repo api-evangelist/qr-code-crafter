@@ -2,13 +2,12 @@ generated: '2026-08-11'
 method: searched
 source: https://qrcodecrafter.com/.well-known/webmcp.json
 status: published
-transport_note: >-
-  QR Code Crafter does NOT operate a hosted MCP JSON-RPC server. /mcp and /.well-known/mcp.json both
-  return 404. What it publishes instead is WebMCP — an in-page browser-agent tool surface registered
+transport_note: QR Code Crafter does NOT operate a hosted MCP JSON-RPC server. /mcp and /.well-known/mcp.json
+  both return 404. What it publishes instead is WebMCP — an in-page browser-agent tool surface registered
   via document.modelContext.registerTool (with navigator.modelContext fallback), plus server-rendered
-  declarative form[toolname=...] elements that a browser agent can drive before hydration. The tool
-  definitions below are the provider's own, read verbatim from the published WebMCP context document;
-  they are not derived from OpenAPI and are not candidates.
+  declarative form[toolname=...] elements that a browser agent can drive before hydration. The tool definitions
+  below are the provider's own, read verbatim from the published WebMCP context document; they are not
+  derived from OpenAPI and are not candidates.
 server:
   name: qrcodecrafter-webmcp
   transport: webmcp
@@ -16,61 +15,51 @@ server:
   context_url: https://qrcodecrafter.com/.well-known/webmcp.json
   context_version: 1.0.0
   context_last_updated: '2026-07-12'
-  origin_trial_note: >-
-    Production emits the Chrome WebMCP Origin-Trial header only for Lighthouse audit user agents or an
-    explicit ?webmcp=on query, because experimental activation can terminate affected renderers.
-    Ordinary browsing retains the declarative forms, schemas and manifests without the trial header.
-    Permissions-Policy on live responses includes tools=(self) — observed on a live probe.
+  origin_trial_note: Production emits the Chrome WebMCP Origin-Trial header only for Lighthouse audit
+    user agents or an explicit ?webmcp=on query, because experimental activation can terminate affected
+    renderers. Ordinary browsing retains the declarative forms, schemas and manifests without the trial
+    header. Permissions-Policy on live responses includes tools=(self) — observed on a live probe.
 tools:
-  - name: generate_qr
-    description: >-
-      Generate a static QR code file from a supplied payload. Supports URL, Wi-Fi, text, contact,
-      event, location and payment payload types across six export formats.
-    source_operation: openapi/qr-code-crafter-openapi-original.json#generateQr
-  - name: generate_verified_qr
-    description: >-
-      Generate a static QR asset, structurally review its payload, assess quiet zone and contrast
-      settings, decode the final file, compare payload hashes and return an evidence receipt.
-    source_operation: openapi/qr-code-crafter-openapi-original.json#generateVerifiedQr
-  - name: generate_bulk_qr
-    description: >-
-      Generate a ZIP archive of up to 50 static QR code files from CSV text or row objects, with
-      manifest.csv and manifest.json.
-    source_operation: openapi/qr-code-crafter-openapi-original.json#generateBulkQr
-  - name: create_dynamic_qr
-    description: >-
-      Create an editable public HTTPS redirect and return its stable QR URL plus a one-time private
-      management capability token.
-    source_operation: openapi/qr-code-crafter-openapi-original.json#createDynamicQr
-  - name: manage_dynamic_qr
-    description: >-
-      Read, update, pause, resume, rotate or permanently delete a dynamic QR redirect with a private
-      capability token.
-    source_operation: openapi/qr-code-crafter-openapi-original.json#getDynamicQr
-  - name: create_qr_vault
-    description: >-
-      Create a private capability-managed vault for up to 50 dynamic QR redirects. The management
-      token is returned only at creation.
-    source_operation: openapi/qr-code-crafter-openapi-original.json#createDynamicQrVault
-  - name: manage_qr_vault
-    description: >-
-      Read aggregate analytics, rename, delete, or create/update/pause/resume/delete vault-owned
-      dynamic QR records.
-    source_operation: openapi/qr-code-crafter-openapi-original.json#getDynamicQrVault
-  - name: create_dynamic_qr_campaign
-    description: >-
-      Sequentially create up to five editable HTTPS redirects and return a private manifest with the
-      one-time management capabilities. No automatic retry on partial failure.
-    source_operation: openapi/qr-code-crafter-openapi-original.json#createDynamicQr
+- name: generate_qr
+  description: Generate a static QR code file from a supplied payload. Supports URL, Wi-Fi, text, contact,
+    event, location and payment payload types across six export formats.
+  source_operation: openapi/qr-code-crafter-openapi-original.json#generateQr
+- name: generate_verified_qr
+  description: Generate a static QR asset, structurally review its payload, assess quiet zone and contrast
+    settings, decode the final file, compare payload hashes and return an evidence receipt.
+  source_operation: openapi/qr-code-crafter-openapi-original.json#generateVerifiedQr
+- name: generate_bulk_qr
+  description: Generate a ZIP archive of up to 50 static QR code files from CSV text or row objects, with
+    manifest.csv and manifest.json.
+  source_operation: openapi/qr-code-crafter-openapi-original.json#generateBulkQr
+- name: create_dynamic_qr
+  description: Create an editable public HTTPS redirect and return its stable QR URL plus a one-time private
+    management capability token.
+  source_operation: openapi/qr-code-crafter-openapi-original.json#createDynamicQr
+- name: manage_dynamic_qr
+  description: Read, update, pause, resume, rotate or permanently delete a dynamic QR redirect with a
+    private capability token.
+  source_operation: openapi/qr-code-crafter-openapi-original.json#getDynamicQr
+- name: create_qr_vault
+  description: Create a private capability-managed vault for up to 50 dynamic QR redirects. The management
+    token is returned only at creation.
+  source_operation: openapi/qr-code-crafter-openapi-original.json#createDynamicQrVault
+- name: manage_qr_vault
+  description: Read aggregate analytics, rename, delete, or create/update/pause/resume/delete vault-owned
+    dynamic QR records.
+  source_operation: openapi/qr-code-crafter-openapi-original.json#getDynamicQrVault
+- name: create_dynamic_qr_campaign
+  description: Sequentially create up to five editable HTTPS redirects and return a private manifest with
+    the one-time management capabilities. No automatic retry on partial failure.
+  source_operation: openapi/qr-code-crafter-openapi-original.json#createDynamicQr
 declarative_forms:
-  note: >-
-    Server-rendered forms carry WebMCP toolname/tooldescription attributes so a browser agent (or
+  note: Server-rendered forms carry WebMCP toolname/tooldescription attributes so a browser agent (or
     PageSpeed) can identify the workflow without waiting for hydration.
   root_layout_tool: generate_qr
   named:
-    - generate_qr
-    - generate_verified_qr
-    - create_dynamic_qr_campaign_pack
+  - generate_qr
+  - generate_verified_qr
+  - create_dynamic_qr_campaign_pack
   component_count: 53
 x-evidence:
   fetched: '2026-08-11'
@@ -78,7 +67,13 @@ x-evidence:
   http_status: 200
   content_type: application/json
   negative_probes:
-    - url: https://qrcodecrafter.com/mcp
-      http_status: 404
-    - url: https://qrcodecrafter.com/.well-known/mcp.json
-      http_status: 404
+  - url: https://qrcodecrafter.com/mcp
+    http_status: 404
+  - url: https://qrcodecrafter.com/.well-known/mcp.json
+    http_status: 404
+deployment:
+  mode: unclear
+  verified: searched
+  tools: 8
+  checked: '2026-08-12'
+  source: catalog MCP census
