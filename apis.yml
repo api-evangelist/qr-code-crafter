@@ -46,59 +46,119 @@ tags_raw:
   - llms.txt
   - capability tokens
 apis:
-  - name: QRCodeCrafter API
-    description: >-
-      REST API for generating static and bulk QR codes and managing dynamic URL redirects/vaults with aggregate
-      analytics. Includes an OpenAPI 3.0.1 contract, WebMCP browser-agent context, ai-plugin.json, llms.txt, and ai.txt
-      agent guides.
-    humanURL: https://qrcodecrafter.com/qr-code-api
-    baseURL: https://qrcodecrafter.com
-    tags:
-      - QR Code
-      - QR Code Generation
-      - Static Qr
-      - Dynamic QR
-      - dynamic redirects
-      - image export
-      - bulk generation
-      - Developer Tools
-      - OpenAPI
-      - WebMCP
-      - browser agents
-      - payments (QR)
-    tags_raw:
-      - QR code
-      - QR code generation
-      - static QR
-      - dynamic QR
-      - dynamic redirects
-      - image export
-      - bulk generation
-      - developer tools
-      - OpenAPI
-      - WebMCP
-      - browser agents
-      - payments (QR)
-    properties:
-      - type: OpenAPI
-        url: https://qrcodecrafter.com/.well-known/openapi.json
-      - type: OpenAPI
-        url: openapi/qr-code-crafter-openapi-original.json
-      - type: Documentation
-        url: https://qrcodecrafter.com/qr-code-api
-      - type: APIReference
-        url: https://qrcodecrafter.com/openapi.yaml
-      - type: LLMsTxt
-        url: https://qrcodecrafter.com/llms.txt
-      - type: WebMCP
-        url: https://qrcodecrafter.com/.well-known/webmcp.json
-      - type: ToolCrosswalk
-        url: mcp/qr-code-crafter-tool-crosswalk.yml
-      - type: Overlay
-        url: overlays/qr-code-crafter-openapi-overlay.yaml
-      - type: DataModel
-        url: data-model/qr-code-crafter-data-model.yml
+- aid: qr-code-crafter:qr-code-crafter-dynamic-qr-api
+  name: QR Code Crafter Dynamic Qr API
+  description: The Dynamic Qr API from QR Code Crafter — 2 operation(s) for dynamic qr.
+  humanURL: https://qrcodecrafter.com/qr-code-api
+  baseURL: https://qrcodecrafter.com
+  tags:
+  - Dynamic Qr
+  properties:
+  - type: OpenAPI
+    url: openapi/qr-code-crafter-dynamic-qr-api-openapi.yml
+  - type: Documentation
+    url: https://qrcodecrafter.com/qr-code-api
+  - type: APIReference
+    url: https://qrcodecrafter.com/openapi.yaml
+  - type: LLMsTxt
+    url: https://qrcodecrafter.com/llms.txt
+  - type: WebMCP
+    url: https://qrcodecrafter.com/.well-known/webmcp.json
+  - type: ToolCrosswalk
+    url: mcp/qr-code-crafter-tool-crosswalk.yml
+  - type: DataModel
+    url: data-model/qr-code-crafter-data-model.yml
+- aid: qr-code-crafter:qr-code-crafter-dynamic-qr-vaults-api
+  name: QR Code Crafter Dynamic Qr Vaults API
+  description: The Dynamic Qr Vaults API from QR Code Crafter — 5 operation(s) for dynamic qr vaults.
+  humanURL: https://qrcodecrafter.com/qr-code-api
+  baseURL: https://qrcodecrafter.com
+  tags:
+  - Dynamic Qr Vaults
+  properties:
+  - type: OpenAPI
+    url: openapi/qr-code-crafter-dynamic-qr-vaults-api-openapi.yml
+  - type: Documentation
+    url: https://qrcodecrafter.com/qr-code-api
+  - type: APIReference
+    url: https://qrcodecrafter.com/openapi.yaml
+  - type: LLMsTxt
+    url: https://qrcodecrafter.com/llms.txt
+  - type: WebMCP
+    url: https://qrcodecrafter.com/.well-known/webmcp.json
+  - type: ToolCrosswalk
+    url: mcp/qr-code-crafter-tool-crosswalk.yml
+  - type: DataModel
+    url: data-model/qr-code-crafter-data-model.yml
+- aid: qr-code-crafter:qr-code-crafter-netlify-api
+  name: QR Code Crafter .netlify API
+  description: The .netlify API from QR Code Crafter — 3 operation(s) for .netlify.
+  humanURL: https://qrcodecrafter.com/qr-code-api
+  baseURL: https://qrcodecrafter.com
+  tags:
+  - .netlify
+  properties:
+  - type: OpenAPI
+    url: openapi/qr-code-crafter-netlify-api-openapi.yml
+  - type: Documentation
+    url: https://qrcodecrafter.com/qr-code-api
+  - type: APIReference
+    url: https://qrcodecrafter.com/openapi.yaml
+  - type: LLMsTxt
+    url: https://qrcodecrafter.com/llms.txt
+  - type: WebMCP
+    url: https://qrcodecrafter.com/.well-known/webmcp.json
+  - type: ToolCrosswalk
+    url: mcp/qr-code-crafter-tool-crosswalk.yml
+  - type: DataModel
+    url: data-model/qr-code-crafter-data-model.yml
+- aid: qr-code-crafter:qr-code-crafter-r-api
+  name: QR Code Crafter R API
+  description: The R API from QR Code Crafter — 1 operation(s) for r.
+  humanURL: https://qrcodecrafter.com/qr-code-api
+  baseURL: https://qrcodecrafter.com
+  tags:
+  - R
+  properties:
+  - type: OpenAPI
+    url: openapi/qr-code-crafter-r-api-openapi.yml
+  - type: Documentation
+    url: https://qrcodecrafter.com/qr-code-api
+  - type: APIReference
+    url: https://qrcodecrafter.com/openapi.yaml
+  - type: LLMsTxt
+    url: https://qrcodecrafter.com/llms.txt
+  - type: WebMCP
+    url: https://qrcodecrafter.com/.well-known/webmcp.json
+  - type: ToolCrosswalk
+    url: mcp/qr-code-crafter-tool-crosswalk.yml
+  - type: DataModel
+    url: data-model/qr-code-crafter-data-model.yml
+- aid: qr-code-crafter:qr-code-crafter-send-feedback-api
+  name: QR Code Crafter Send Feedback API
+  description: The Send Feedback API from QR Code Crafter — 1 operation(s) for send feedback.
+  humanURL: https://qrcodecrafter.com/qr-code-api
+  baseURL: https://qrcodecrafter.com
+  tags:
+  - Send Feedback
+  properties:
+  - type: OpenAPI
+    url: openapi/qr-code-crafter-send-feedback-api-openapi.yml
+  - type: Documentation
+    url: https://qrcodecrafter.com/qr-code-api
+  - type: APIReference
+    url: https://qrcodecrafter.com/openapi.yaml
+  - type: LLMsTxt
+    url: https://qrcodecrafter.com/llms.txt
+  - type: WebMCP
+    url: https://qrcodecrafter.com/.well-known/webmcp.json
+  - type: ToolCrosswalk
+    url: mcp/qr-code-crafter-tool-crosswalk.yml
+  - type: DataModel
+    url: data-model/qr-code-crafter-data-model.yml
 common:
+  - type: Overlay
+    url: overlays/qr-code-crafter-openapi-overlay.yaml
   - type: Website
     url: https://qrcodecrafter.com
   - type: Documentation
