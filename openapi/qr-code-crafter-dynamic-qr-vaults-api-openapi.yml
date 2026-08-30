@@ -1,0 +1,687 @@
+openapi: 3.2.0
+info:
+  title: QRCodeCrafter Dynamic Qr Vaults API
+  version: 1.0.0
+  description: Generate branded static QR codes in SVG, PNG, JPG, WebP, PDF, or EPS via the QR Code Crafter service.
+  termsOfService: https://qrcodecrafter.com/terms
+  contact:
+    name: QR Code Crafter Agent Support
+    email: support@qrcodecrafter.com
+servers:
+- url: https://qrcodecrafter.com
+  description: Production
+tags:
+- name: Dynamic Qr Vaults
+paths:
+  /api/dynamic-qr-vaults:
+    post:
+      summary: Create a capability-managed dynamic QR vault
+      operationId: createDynamicQrVault
+      description: Creates a private no-account vault for up to 50 project-owned redirects. The vault management token is returned only by this operation and is never recoverable.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DynamicQrVaultCreateRequest'
+      responses:
+        '201':
+          description: Vault created with its one-time bearer capability
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+            X-Dynamic-QR-Vault-Version:
+              $ref: '#/components/headers/DynamicQrVaultVersion'
+            Location:
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DynamicQrVaultCreateResponse'
+        '400':
+          description: Invalid JSON
+          name: null
+          or unsupported field: null
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Cross-origin write rejected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Vault storage unavailable or at capacity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+      - Dynamic Qr Vaults
+  /api/dynamic-qr-vaults/{vaultId}:
+    parameters:
+    - $ref: '#/components/parameters/DynamicQrVaultId'
+    get:
+      summary: Read an authorized dynamic QR vault and its public child records
+      operationId: getDynamicQrVault
+      security:
+      - DynamicQrVaultBearer: []
+      responses:
+        '200':
+          description: Vault and project-owned records; never includes token hashes or child management credentials
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+            X-Dynamic-QR-Vault-Version:
+              $ref: '#/components/headers/DynamicQrVaultVersion'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DynamicQrVaultResponse'
+        '401':
+          description: Missing
+          malformed: null
+          unknown: null
+          or invalid vault capability: null
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+      - Dynamic Qr Vaults
+    patch:
+      summary: Rename a dynamic QR vault
+      operationId: updateDynamicQrVault
+      description: Requires the current vault ETag in If-Match or X-Dynamic-QR-Vault-Version.
+      security:
+      - DynamicQrVaultBearer: []
+      parameters:
+      - $ref: '#/components/parameters/IfMatch'
+      - $ref: '#/components/parameters/DynamicQrVaultVersionMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DynamicQrVaultRenameRequest'
+      responses:
+        '200':
+          description: Renamed vault
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+            X-Dynamic-QR-Vault-Version:
+              $ref: '#/components/headers/DynamicQrVaultVersion'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DynamicQrVaultResponse'
+        '401':
+          description: Invalid vault capability
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '412':
+          description: Missing or stale vault ETag
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+      - Dynamic Qr Vaults
+    delete:
+      summary: Delete an empty dynamic QR vault
+      operationId: deleteDynamicQrVault
+      description: Requires the current vault ETag. Deletion is non-cascading and fails while the vault contains child records.
+      security:
+      - DynamicQrVaultBearer: []
+      parameters:
+      - $ref: '#/components/parameters/IfMatch'
+      - $ref: '#/components/parameters/DynamicQrVaultVersionMatch'
+      responses:
+        '204':
+          description: Empty vault permanently deleted
+        '401':
+          description: Invalid vault capability
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Vault is not empty
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '412':
+          description: Missing or stale vault ETag
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+      - Dynamic Qr Vaults
+  /api/dynamic-qr-vaults/{vaultId}/qr:
+    parameters:
+    - $ref: '#/components/parameters/DynamicQrVaultId'
+    post:
+      summary: Create a project-owned dynamic QR record
+      operationId: createDynamicQrVaultChild
+      description: Requires the current vault ETag. The child is controlled only by the vault capability; no child token or token hash is returned.
+      security:
+      - DynamicQrVaultBearer: []
+      parameters:
+      - $ref: '#/components/parameters/IfMatch'
+      - $ref: '#/components/parameters/DynamicQrVaultVersionMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DynamicQrVaultChildCreateRequest'
+      responses:
+        '201':
+          description: Project-owned child created
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+            X-Dynamic-QR-Version:
+              $ref: '#/components/headers/DynamicQrVersion'
+            X-Dynamic-QR-Vault-Version:
+              $ref: '#/components/headers/DynamicQrVaultVersion'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DynamicQrVaultChildResponse'
+        '400':
+          description: Invalid destination or metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Invalid vault capability
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '412':
+          description: Missing or stale vault ETag
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+      - Dynamic Qr Vaults
+  /api/dynamic-qr-vaults/{vaultId}/qr/{slug}:
+    parameters:
+    - $ref: '#/components/parameters/DynamicQrVaultId'
+    - $ref: '#/components/parameters/DynamicQrSlug'
+    patch:
+      summary: Update, pause, or resume a project-owned dynamic QR record
+      operationId: updateDynamicQrVaultChild
+      description: Requires the current child ETag in If-Match or X-Dynamic-QR-Version. The vault version is returned separately when successful.
+      security:
+      - DynamicQrVaultBearer: []
+      parameters:
+      - $ref: '#/components/parameters/IfMatch'
+      - $ref: '#/components/parameters/DynamicQrVersionMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DynamicQrVaultChildUpdateRequest'
+      responses:
+        '200':
+          description: Updated public child record without internal ownership or credentials
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+            X-Dynamic-QR-Version:
+              $ref: '#/components/headers/DynamicQrVersion'
+            X-Dynamic-QR-Vault-Version:
+              $ref: '#/components/headers/DynamicQrVaultVersion'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DynamicQrVaultChildResponse'
+        '401':
+          description: Invalid vault capability
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Child is not owned by this vault
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '412':
+          description: Missing or stale child ETag
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+      - Dynamic Qr Vaults
+  /api/dynamic-qr-vaults/{vaultId}/qr/{slug}/analytics:
+    parameters:
+    - $ref: '#/components/parameters/DynamicQrVaultId'
+    - $ref: '#/components/parameters/DynamicQrSlug'
+    get:
+      summary: Read aggregate analytics for one project-owned dynamic QR record
+      operationId: getDynamicQrVaultChildAnalytics
+      description: Requires the private vault bearer capability and verifies that the selected child belongs to the vault. Returns approximate aggregate redirect counts only; no visitor identifiers, IP addresses, user agents, referrers, cookies, locations, or device data are stored.
+      security:
+      - DynamicQrVaultBearer: []
+      responses:
+        '200':
+          description: Aggregate analytics for the selected project-owned redirect. Analytics may be omitted when disabled outside production.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DynamicQrVaultChildAnalyticsResponse'
+        '401':
+          description: Invalid vault capability
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Child is not owned by this vault
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Vault or child storage temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+      - Dynamic Qr Vaults
+    delete:
+      summary: Permanently delete a project-owned dynamic QR record
+      operationId: deleteDynamicQrVaultChild
+      description: Requires the current child ETag. Deletion also removes vault membership and returns the new vault validator.
+      security:
+      - DynamicQrVaultBearer: []
+      parameters:
+      - $ref: '#/components/parameters/IfMatch'
+      - $ref: '#/components/parameters/DynamicQrVersionMatch'
+      responses:
+        '204':
+          description: Child permanently deleted
+          headers:
+            X-Dynamic-QR-Vault-Version:
+              $ref: '#/components/headers/DynamicQrVaultVersion'
+        '401':
+          description: Invalid vault capability
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Child is not owned by this vault
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '412':
+          description: Missing or stale child ETag
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+      - Dynamic Qr Vaults
+components:
+  schemas:
+    DynamicQrVaultCreateRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          maxLength: 80
+    DynamicQrVaultChildMetadata:
+      type: object
+      properties:
+        folder:
+          type: string
+          maxLength: 40
+        tags:
+          type: array
+          maxItems: 8
+          items:
+            type: string
+            minLength: 1
+            maxLength: 24
+    DynamicQrVaultRecord:
+      type: object
+      description: Public authorized representation. Never contains managementTokenHash, qrSlugs, child credentials, or internal storage fields.
+      required:
+      - vaultId
+      - name
+      - version
+      - createdAt
+      - updatedAt
+      - emptyExpiresAt
+      - records
+      properties:
+        vaultId:
+          type: string
+          pattern: ^[A-Za-z0-9_-]{22}$
+        name:
+          type: string
+          maxLength: 80
+        version:
+          type: integer
+          minimum: 1
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        emptyExpiresAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: Empty projects expire after six hours. This is null once the project contains a QR code.
+        records:
+          type: array
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/DynamicQrVaultChildRecord'
+    DynamicQrVaultChildAnalyticsResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - slug
+      properties:
+        success:
+          type: boolean
+        slug:
+          type: string
+          pattern: ^[A-Za-z0-9_-]{22}$
+        analytics:
+          $ref: '#/components/schemas/DynamicQrAnalyticsSummary'
+    DynamicQrVaultRenameRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - name
+      properties:
+        name:
+          type: string
+          maxLength: 80
+    DynamicQrVaultChildResponse:
+      type: object
+      required:
+      - success
+      - record
+      properties:
+        success:
+          type: boolean
+        record:
+          $ref: '#/components/schemas/DynamicQrVaultChildRecord'
+    DynamicQrVaultCreateResponse:
+      allOf:
+      - $ref: '#/components/schemas/DynamicQrVaultResponse'
+      - type: object
+        required:
+        - managementToken
+        - managementUrl
+        properties:
+          managementToken:
+            type: string
+            pattern: ^[A-Za-z0-9_-]{43}$
+            description: One-time vault bearer capability, returned only on creation.
+          managementUrl:
+            type: string
+            format: uri
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          default: false
+        error:
+          type: string
+    DynamicQrVaultChildCreateRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - destination
+      properties:
+        destination:
+          type: string
+          format: uri
+          pattern: ^https://
+          maxLength: 2048
+        label:
+          type: string
+          maxLength: 80
+        folder:
+          type: string
+          maxLength: 40
+        tags:
+          type: array
+          maxItems: 8
+          items:
+            type: string
+            minLength: 1
+            maxLength: 24
+    DynamicQrVaultChildUpdateRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        destination:
+          type: string
+          format: uri
+          pattern: ^https://
+          maxLength: 2048
+        label:
+          type: string
+          maxLength: 80
+        status:
+          type: string
+          enum:
+          - active
+          - paused
+        folder:
+          type: string
+          maxLength: 40
+        tags:
+          type: array
+          maxItems: 8
+          items:
+            type: string
+            minLength: 1
+            maxLength: 24
+    DynamicQrVaultResponse:
+      type: object
+      required:
+      - success
+      - vault
+      properties:
+        success:
+          type: boolean
+        vault:
+          $ref: '#/components/schemas/DynamicQrVaultRecord'
+    DynamicQrAnalyticsSummary:
+      type: object
+      description: Enabled on the production deployment. The analytics property remains optional so non-production or deliberately disabled deployments can omit it.
+      required:
+      - available
+      - approximate
+      - retentionDays
+      - dailyCountLimit
+      properties:
+        available:
+          type: boolean
+          description: False when analytics are enabled but aggregate storage is temporarily unavailable.
+        approximate:
+          type: boolean
+          enum:
+          - true
+          description: Counts are best-effort redirects, not unique people or guaranteed scans.
+        retentionDays:
+          type: integer
+          enum:
+          - 90
+        dailyCountLimit:
+          type: integer
+          enum:
+          - 100000
+          description: Maximum aggregate redirects counted for one slug in one UTC day. Later eligible redirects still work but are not counted.
+        totalScans:
+          type: integer
+          minimum: 0
+          description: Lifetime aggregate redirect count. Present when analytics storage is available.
+        daily:
+          type: array
+          maxItems: 90
+          items:
+            type: object
+            required:
+            - date
+            - count
+            properties:
+              date:
+                type: string
+                format: date
+              count:
+                type: integer
+                minimum: 1
+                maximum: 100000
+        lastCountedAt:
+          type: string
+          format: date-time
+    DynamicQrVaultChildRecord:
+      allOf:
+      - $ref: '#/components/schemas/DynamicQrRecord'
+      - $ref: '#/components/schemas/DynamicQrVaultChildMetadata'
+    DynamicQrRecord:
+      type: object
+      required:
+      - slug
+      - destination
+      - label
+      - status
+      - version
+      - createdAt
+      - updatedAt
+      properties:
+        slug:
+          type: string
+          pattern: ^[A-Za-z0-9_-]{22}$
+        destination:
+          type: string
+          format: uri
+        label:
+          type: string
+        status:
+          type: string
+          enum:
+          - active
+          - paused
+        version:
+          type: integer
+          minimum: 1
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+  parameters:
+    DynamicQrVaultVersionMatch:
+      name: X-Dynamic-QR-Vault-Version
+      in: header
+      required: false
+      description: Stable mirror of the current vault ETag for intermediaries that rewrite conditional headers
+      schema:
+        type: string
+        maxLength: 256
+    IfMatch:
+      name: If-Match
+      in: header
+      required: true
+      description: Exact value returned by X-Dynamic-QR-Version, or the ETag when no intermediary has rewritten it
+      schema:
+        type: string
+        maxLength: 256
+    DynamicQrSlug:
+      name: slug
+      in: path
+      required: true
+      description: 22-character dynamic QR identifier
+      schema:
+        type: string
+        pattern: ^[A-Za-z0-9_-]{22}$
+    DynamicQrVersionMatch:
+      name: X-Dynamic-QR-Version
+      in: header
+      required: false
+      description: Stable mirror of If-Match for intermediaries that rewrite or remove standard conditional headers
+      schema:
+        type: string
+        maxLength: 256
+    DynamicQrVaultId:
+      name: vaultId
+      in: path
+      required: true
+      description: 22-character vault identifier; not sufficient for authorization
+      schema:
+        type: string
+        pattern: ^[A-Za-z0-9_-]{22}$
+  headers:
+    DynamicQrVersion:
+      description: Stable record version validator mirrored separately because some development proxies rewrite ETag
+      schema:
+        type: string
+    DynamicQrVaultVersion:
+      description: Stable vault version validator. It is distinct from a nested child record validator.
+      schema:
+        type: string
+    ETag:
+      description: Opaque record version validator for conditional updates
+      schema:
+        type: string
+  securitySchemes:
+    AgentApiKey:
+      type: apiKey
+      in: header
+      name: X-Agent-Api-Key
+      description: Optional API key used when integrations need scoped or rate-limited access.
+    DynamicQrBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: capability-token
+      description: Private 43-character management capability returned at creation or explicit token rotation.
+    DynamicQrVaultBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: capability-token
+      description: Private 43-character vault capability returned only when the vault is created. It authorizes the vault and all nested records; child credentials are never exposed.
+x-agent-workflows:
+  dynamicQrCampaign:
+    description: Create one to five dynamic QR redirects sequentially. Each row uses createDynamicQr; retain successful one-time management capabilities even when a later row fails. Do not retry a successful row automatically.
+    runtimeTool: create_dynamic_qr_campaign
+    visibleFormTool: create_dynamic_qr_campaign_pack
+    maxRows: 5
+    assetWorkflow: Call generateQr for each successful redirectUrl, or use the visible browser workflow to download one private ZIP with QR assets and JSON/CSV capability manifests.
+    privacy: Management URLs and tokens are unrecoverable secrets. Never publish the manifest or include management capabilities in QR artwork.

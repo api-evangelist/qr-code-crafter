@@ -1,0 +1,466 @@
+openapi: 3.2.0
+info:
+  title: QRCodeCrafter Dynamic Qr API
+  version: 1.0.0
+  description: Generate branded static QR codes in SVG, PNG, JPG, WebP, PDF, or EPS via the QR Code Crafter service.
+  termsOfService: https://qrcodecrafter.com/terms
+  contact:
+    name: QR Code Crafter Agent Support
+    email: support@qrcodecrafter.com
+servers:
+- url: https://qrcodecrafter.com
+  description: Production
+tags:
+- name: Dynamic Qr
+paths:
+  /api/dynamic-qr:
+    post:
+      summary: Create a private dynamic QR redirect
+      operationId: createDynamicQr
+      description: Creates an editable HTTPS destination. The management token is returned only in this response; store it as a secret capability.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DynamicQrCreateRequest'
+      responses:
+        '201':
+          description: Dynamic QR record created. Optional analytics retain only aggregate redirect counts and no visitor identifiers.
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+            X-Dynamic-QR-Version:
+              $ref: '#/components/headers/DynamicQrVersion'
+            Location:
+              description: Canonical management API resource URL. The capability token is never included in response headers.
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DynamicQrCreateResponse'
+        '400':
+          description: Invalid JSON, unsupported fields, unsafe destination, or invalid label
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Cross-origin management write rejected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '405':
+          description: Method not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Create rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Dynamic QR storage unavailable or the hard active-record capacity has been reached
+          headers:
+            Retry-After:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+      - Dynamic Qr
+  /api/dynamic-qr/{slug}:
+    parameters:
+    - $ref: '#/components/parameters/DynamicQrSlug'
+    get:
+      summary: Read a dynamic QR record
+      operationId: getDynamicQr
+      security:
+      - DynamicQrBearer: []
+      responses:
+        '200':
+          description: Authorized dynamic QR record
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+            X-Dynamic-QR-Version:
+              $ref: '#/components/headers/DynamicQrVersion'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DynamicQrManageResponse'
+        '401':
+          description: Missing, malformed, or invalid capability token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '405':
+          description: Method not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Dynamic QR storage unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+      - Dynamic Qr
+    patch:
+      summary: Update a dynamic QR record
+      operationId: updateDynamicQr
+      security:
+      - DynamicQrBearer: []
+      description: Requires the current ETag in If-Match. Set rotateToken to true to replace the bearer capability; the old token is immediately invalid.
+      parameters:
+      - $ref: '#/components/parameters/IfMatch'
+      - $ref: '#/components/parameters/DynamicQrVersionMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DynamicQrUpdateRequest'
+      responses:
+        '200':
+          description: Updated dynamic QR record
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+            X-Dynamic-QR-Version:
+              $ref: '#/components/headers/DynamicQrVersion'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DynamicQrUpdateResponse'
+        '400':
+          description: Invalid JSON or update fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Missing, malformed, or invalid capability token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Cross-origin management write rejected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '412':
+          description: Missing or stale If-Match ETag
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '423':
+          description: The record is operator-blocked and cannot be updated or resumed by its capability holder
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Dynamic QR storage unavailable; no record was changed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+      - Dynamic Qr
+    delete:
+      summary: Permanently delete a dynamic QR record
+      operationId: deleteDynamicQr
+      security:
+      - DynamicQrBearer: []
+      description: Requires the current ETag in If-Match. Deletion is irreversible and the printed redirect URL will return 404.
+      parameters:
+      - $ref: '#/components/parameters/IfMatch'
+      - $ref: '#/components/parameters/DynamicQrVersionMatch'
+      responses:
+        '204':
+          description: Dynamic QR record permanently deleted
+        '401':
+          description: Missing, malformed, or invalid capability token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Cross-origin management write rejected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '412':
+          description: Missing or stale If-Match ETag
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Management rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Dynamic QR storage unavailable; deletion was not confirmed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+      - Dynamic Qr
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          default: false
+        error:
+          type: string
+    DynamicQrManageResponse:
+      type: object
+      required:
+      - success
+      - record
+      - redirectUrl
+      properties:
+        success:
+          type: boolean
+        record:
+          $ref: '#/components/schemas/DynamicQrRecord'
+        redirectUrl:
+          type: string
+          format: uri
+        analytics:
+          $ref: '#/components/schemas/DynamicQrAnalyticsSummary'
+    DynamicQrUpdateRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        destination:
+          type: string
+          format: uri
+          pattern: ^https://
+          maxLength: 2048
+        label:
+          type: string
+          maxLength: 80
+        status:
+          type: string
+          enum:
+          - active
+          - paused
+        rotateToken:
+          type: boolean
+          description: Replace the bearer capability and return the new token once in the response.
+    DynamicQrAnalyticsSummary:
+      type: object
+      description: Enabled on the production deployment. The analytics property remains optional so non-production or deliberately disabled deployments can omit it.
+      required:
+      - available
+      - approximate
+      - retentionDays
+      - dailyCountLimit
+      properties:
+        available:
+          type: boolean
+          description: False when analytics are enabled but aggregate storage is temporarily unavailable.
+        approximate:
+          type: boolean
+          enum:
+          - true
+          description: Counts are best-effort redirects, not unique people or guaranteed scans.
+        retentionDays:
+          type: integer
+          enum:
+          - 90
+        dailyCountLimit:
+          type: integer
+          enum:
+          - 100000
+          description: Maximum aggregate redirects counted for one slug in one UTC day. Later eligible redirects still work but are not counted.
+        totalScans:
+          type: integer
+          minimum: 0
+          description: Lifetime aggregate redirect count. Present when analytics storage is available.
+        daily:
+          type: array
+          maxItems: 90
+          items:
+            type: object
+            required:
+            - date
+            - count
+            properties:
+              date:
+                type: string
+                format: date
+              count:
+                type: integer
+                minimum: 1
+                maximum: 100000
+        lastCountedAt:
+          type: string
+          format: date-time
+    DynamicQrUpdateResponse:
+      allOf:
+      - $ref: '#/components/schemas/DynamicQrManageResponse'
+      - type: object
+        properties:
+          managementToken:
+            type: string
+            pattern: ^[A-Za-z0-9_-]{43}$
+            description: Present only when rotateToken is true; store it because it is not returned again.
+          managementUrl:
+            type: string
+            format: uri
+    DynamicQrCreateResponse:
+      type: object
+      required:
+      - success
+      - record
+      - managementToken
+      - redirectUrl
+      - managementUrl
+      properties:
+        success:
+          type: boolean
+          example: true
+        record:
+          $ref: '#/components/schemas/DynamicQrRecord'
+        managementToken:
+          type: string
+          pattern: ^[A-Za-z0-9_-]{43}$
+          description: One-time bearer capability. It is never returned by later reads.
+        redirectUrl:
+          type: string
+          format: uri
+        managementUrl:
+          type: string
+          format: uri
+    DynamicQrRecord:
+      type: object
+      required:
+      - slug
+      - destination
+      - label
+      - status
+      - version
+      - createdAt
+      - updatedAt
+      properties:
+        slug:
+          type: string
+          pattern: ^[A-Za-z0-9_-]{22}$
+        destination:
+          type: string
+          format: uri
+        label:
+          type: string
+        status:
+          type: string
+          enum:
+          - active
+          - paused
+        version:
+          type: integer
+          minimum: 1
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    DynamicQrCreateRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - destination
+      properties:
+        destination:
+          type: string
+          format: uri
+          pattern: ^https://
+          maxLength: 2048
+          description: Public HTTPS destination. Private, local, reserved, and credential-bearing URLs are rejected.
+        label:
+          type: string
+          maxLength: 80
+  headers:
+    ETag:
+      description: Opaque record version validator for conditional updates
+      schema:
+        type: string
+    DynamicQrVersion:
+      description: Stable record version validator mirrored separately because some development proxies rewrite ETag
+      schema:
+        type: string
+  parameters:
+    DynamicQrSlug:
+      name: slug
+      in: path
+      required: true
+      description: 22-character dynamic QR identifier
+      schema:
+        type: string
+        pattern: ^[A-Za-z0-9_-]{22}$
+    DynamicQrVersionMatch:
+      name: X-Dynamic-QR-Version
+      in: header
+      required: false
+      description: Stable mirror of If-Match for intermediaries that rewrite or remove standard conditional headers
+      schema:
+        type: string
+        maxLength: 256
+    IfMatch:
+      name: If-Match
+      in: header
+      required: true
+      description: Exact value returned by X-Dynamic-QR-Version, or the ETag when no intermediary has rewritten it
+      schema:
+        type: string
+        maxLength: 256
+  securitySchemes:
+    AgentApiKey:
+      type: apiKey
+      in: header
+      name: X-Agent-Api-Key
+      description: Optional API key used when integrations need scoped or rate-limited access.
+    DynamicQrBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: capability-token
+      description: Private 43-character management capability returned at creation or explicit token rotation.
+    DynamicQrVaultBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: capability-token
+      description: Private 43-character vault capability returned only when the vault is created. It authorizes the vault and all nested records; child credentials are never exposed.
+x-agent-workflows:
+  dynamicQrCampaign:
+    description: Create one to five dynamic QR redirects sequentially. Each row uses createDynamicQr; retain successful one-time management capabilities even when a later row fails. Do not retry a successful row automatically.
+    runtimeTool: create_dynamic_qr_campaign
+    visibleFormTool: create_dynamic_qr_campaign_pack
+    maxRows: 5
+    assetWorkflow: Call generateQr for each successful redirectUrl, or use the visible browser workflow to download one private ZIP with QR assets and JSON/CSV capability manifests.
+    privacy: Management URLs and tokens are unrecoverable secrets. Never publish the manifest or include management capabilities in QR artwork.

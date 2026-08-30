@@ -1,0 +1,102 @@
+openapi: 3.2.0
+info:
+  title: QRCodeCrafter R API
+  version: 1.0.0
+  description: Generate branded static QR codes in SVG, PNG, JPG, WebP, PDF, or EPS via the QR Code Crafter service.
+  termsOfService: https://qrcodecrafter.com/terms
+  contact:
+    name: QR Code Crafter Agent Support
+    email: support@qrcodecrafter.com
+servers:
+- url: https://qrcodecrafter.com
+  description: Production
+tags:
+- name: R
+paths:
+  /r/{slug}:
+    parameters:
+    - $ref: '#/components/parameters/DynamicQrSlug'
+    get:
+      summary: Redirect a dynamic QR scan
+      operationId: redirectDynamicQr
+      description: Public redirect. When aggregate analytics are enabled, only the slug and UTC count bucket are retained; no IP address, user agent, referrer, cookie, location, device data, or tracking parameter is stored.
+      responses:
+        '302':
+          description: Active destination redirect
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uri
+        '404':
+          description: Dynamic QR slug not found
+        '405':
+          description: Method not allowed
+        '410':
+          description: Dynamic QR destination is owner-paused or operator-blocked
+        '429':
+          description: Redirect traffic rate limit exceeded
+        '503':
+          description: Redirect storage unavailable
+          headers:
+            Retry-After:
+              schema:
+                type: string
+      tags:
+      - R
+    head:
+      summary: Check a dynamic QR redirect without a response body
+      operationId: headDynamicQr
+      description: Returns the same status and Location headers as GET without a response body.
+      responses:
+        '302':
+          description: Active destination redirect
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uri
+        '404':
+          description: Dynamic QR slug not found
+        '410':
+          description: Dynamic QR destination is owner-paused or operator-blocked
+        '429':
+          description: Redirect traffic rate limit exceeded
+        '503':
+          description: Redirect storage unavailable
+      tags:
+      - R
+components:
+  parameters:
+    DynamicQrSlug:
+      name: slug
+      in: path
+      required: true
+      description: 22-character dynamic QR identifier
+      schema:
+        type: string
+        pattern: ^[A-Za-z0-9_-]{22}$
+  securitySchemes:
+    AgentApiKey:
+      type: apiKey
+      in: header
+      name: X-Agent-Api-Key
+      description: Optional API key used when integrations need scoped or rate-limited access.
+    DynamicQrBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: capability-token
+      description: Private 43-character management capability returned at creation or explicit token rotation.
+    DynamicQrVaultBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: capability-token
+      description: Private 43-character vault capability returned only when the vault is created. It authorizes the vault and all nested records; child credentials are never exposed.
+x-agent-workflows:
+  dynamicQrCampaign:
+    description: Create one to five dynamic QR redirects sequentially. Each row uses createDynamicQr; retain successful one-time management capabilities even when a later row fails. Do not retry a successful row automatically.
+    runtimeTool: create_dynamic_qr_campaign
+    visibleFormTool: create_dynamic_qr_campaign_pack
+    maxRows: 5
+    assetWorkflow: Call generateQr for each successful redirectUrl, or use the visible browser workflow to download one private ZIP with QR assets and JSON/CSV capability manifests.
+    privacy: Management URLs and tokens are unrecoverable secrets. Never publish the manifest or include management capabilities in QR artwork.

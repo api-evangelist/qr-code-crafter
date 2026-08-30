@@ -1,0 +1,94 @@
+openapi: 3.2.0
+info:
+  title: QRCodeCrafter Send Feedback API
+  version: 1.0.0
+  description: Generate branded static QR codes in SVG, PNG, JPG, WebP, PDF, or EPS via the QR Code Crafter service.
+  termsOfService: https://qrcodecrafter.com/terms
+  contact:
+    name: QR Code Crafter Agent Support
+    email: support@qrcodecrafter.com
+servers:
+- url: https://qrcodecrafter.com
+  description: Production
+tags:
+- name: Send Feedback
+paths:
+  /api/send-feedback:
+    post:
+      summary: Send user feedback
+      operationId: sendFeedback
+      security:
+      - AgentApiKey: []
+      - {}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                message:
+                  type: string
+      responses:
+        '200':
+          description: Feedback logged
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+        '401':
+          description: Missing or invalid API key when key enforcement is enabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+      - Send Feedback
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          default: false
+        error:
+          type: string
+  securitySchemes:
+    AgentApiKey:
+      type: apiKey
+      in: header
+      name: X-Agent-Api-Key
+      description: Optional API key used when integrations need scoped or rate-limited access.
+    DynamicQrBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: capability-token
+      description: Private 43-character management capability returned at creation or explicit token rotation.
+    DynamicQrVaultBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: capability-token
+      description: Private 43-character vault capability returned only when the vault is created. It authorizes the vault and all nested records; child credentials are never exposed.
+x-agent-workflows:
+  dynamicQrCampaign:
+    description: Create one to five dynamic QR redirects sequentially. Each row uses createDynamicQr; retain successful one-time management capabilities even when a later row fails. Do not retry a successful row automatically.
+    runtimeTool: create_dynamic_qr_campaign
+    visibleFormTool: create_dynamic_qr_campaign_pack
+    maxRows: 5
+    assetWorkflow: Call generateQr for each successful redirectUrl, or use the visible browser workflow to download one private ZIP with QR assets and JSON/CSV capability manifests.
+    privacy: Management URLs and tokens are unrecoverable secrets. Never publish the manifest or include management capabilities in QR artwork.

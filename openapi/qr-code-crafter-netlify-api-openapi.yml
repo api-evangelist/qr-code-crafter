@@ -1,0 +1,1854 @@
+openapi: 3.2.0
+info:
+  title: QRCodeCrafter .netlify API
+  version: 1.0.0
+  description: Generate branded static QR codes in SVG, PNG, JPG, WebP, PDF, or EPS via the QR Code Crafter service.
+  termsOfService: https://qrcodecrafter.com/terms
+  contact:
+    name: QR Code Crafter Agent Support
+    email: support@qrcodecrafter.com
+servers:
+- url: https://qrcodecrafter.com
+  description: Production
+tags:
+- name: .netlify
+paths:
+  /.netlify/functions/generate-qr:
+    get:
+      summary: Download a QR code asset via Netlify Function
+      operationId: downloadQr
+      security:
+      - AgentApiKey: []
+      - {}
+      parameters:
+      - name: value
+        in: query
+        required: true
+        description: Text, URL, or payload encoded in the QR code
+        schema:
+          type: string
+      - name: format
+        in: query
+        description: Output format for the QR code asset
+        schema:
+          type: string
+          enum:
+          - svg
+          - png
+          - jpg
+          - webp
+          - pdf
+          - eps
+          default: png
+      - name: size
+        in: query
+        description: Width and height of the generated asset in pixels
+        schema:
+          type: integer
+          minimum: 256
+          maximum: 4096
+      - name: margin
+        in: query
+        description: Quiet-zone margin around the QR code modules
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 16
+      - name: bgColor
+        in: query
+        description: 'Background color in hex format, for example #FFFFFF'
+        schema:
+          type: string
+      - name: fgColor
+        in: query
+        description: 'Foreground color in hex format, for example #000000'
+        schema:
+          type: string
+      - name: errorCorrectionLevel
+        in: query
+        description: Error correction level for QR encoding
+        schema:
+          type: string
+          enum:
+          - L
+          - M
+          - Q
+          - H
+      - name: logo
+        in: query
+        description: Optional base64 PNG, JPG, or WebP data URL for an embedded logo
+        schema:
+          type:
+          - string
+          - 'null'
+          maxLength: 1500000
+          pattern: ^data:image\/(png|jpe?g|webp);base64,.+
+      responses:
+        '200':
+          description: Generated QR code asset served as binary content
+          headers:
+            X-QR-Width:
+              description: Rendered asset width
+              schema:
+                type: number
+            X-QR-Height:
+              description: Rendered asset height
+              schema:
+                type: number
+            X-QR-Unit:
+              description: Dimension unit, px for SVG/raster and pt for PDF/EPS
+              schema:
+                type: string
+                enum:
+                - px
+                - pt
+            X-QR-Bytes:
+              description: Exact number of decoded asset bytes
+              schema:
+                type: integer
+          content:
+            image/svg+xml:
+              schema:
+                type: string
+                format: binary
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/webp:
+              schema:
+                type: string
+                format: binary
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            application/postscript:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Missing or invalid API key when key enforcement is enabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '405':
+          description: Method not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Too many requests. QR generation uses a cost-weighted per-client budget; honor the retry and rate-limit headers before resubmitting work.
+          headers:
+            Retry-After:
+              description: Number of seconds to wait before retrying the request
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              description: Cost budget units available in the current window for this client class
+              schema:
+                type: string
+            X-RateLimit-Remaining:
+              description: Cost budget units remaining in the current window
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+      - .netlify
+    post:
+      summary: Generate a QR code asset via Netlify Function
+      operationId: generateQr
+      security:
+      - AgentApiKey: []
+      - {}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateQrRequest'
+            examples:
+              urlSvg:
+                summary: URL QR code as SVG
+                value:
+                  value: https://example.com/menu?utm_source=qr&utm_medium=table_tent
+                  format: svg
+                  size: 1024
+                  margin: 4
+                  fgColor: '#111111'
+                  bgColor: '#ffffff'
+                  errorCorrectionLevel: H
+              textWebp:
+                summary: Plain text QR code as WebP
+                value:
+                  value: 'Order #A-12345 | Table 7 | Save 15% with code QR15.'
+                  format: webp
+                  size: 1024
+                  margin: 4
+              wifiPng:
+                summary: Wi-Fi QR code as PNG
+                value:
+                  value: WIFI:T:WPA;S:Guest Network;P:Welcome123;H:false;;
+                  format: png
+                  size: 1024
+                  margin: 4
+                  errorCorrectionLevel: H
+              emailJpg:
+                summary: Email action QR code as JPG
+                value:
+                  value: mailto:support@example.com?subject=QR%20support&body=Please%20contact%20me
+                  format: jpg
+                  size: 1024
+                  margin: 4
+              smsSvg:
+                summary: SMS QR code as SVG
+                value:
+                  value: SMSTO:+15551234567:QR smoke test
+                  format: svg
+                  size: 1024
+                  margin: 4
+              phoneSvg:
+                summary: Phone call QR code as SVG
+                value:
+                  value: tel:+15551234567
+                  format: svg
+                  size: 1024
+                  margin: 4
+              whatsappPng:
+                summary: WhatsApp chat QR code as PNG
+                value:
+                  value: https://wa.me/15551234567?text=QR%20smoke%20test
+                  format: png
+                  size: 1024
+                  margin: 4
+              vcardPdf:
+                summary: vCard QR code as PDF
+                value:
+                  value: 'BEGIN:VCARD
+
+                    VERSION:3.0
+
+                    FN:Jordan Smith
+
+                    TEL:+15558675309
+
+                    EMAIL:hello@example.com
+
+                    END:VCARD'
+                  format: pdf
+                  size: 1024
+                  margin: 4
+              eventSvg:
+                summary: Calendar event QR code as SVG
+                value:
+                  value: 'BEGIN:VCALENDAR
+
+                    VERSION:2.0
+
+                    BEGIN:VEVENT
+
+                    SUMMARY:Product Demo
+
+                    DTSTART:20300601T100000
+
+                    DTEND:20300601T110000
+
+                    LOCATION:Online
+
+                    URL:https://example.com/demo
+
+                    END:VEVENT
+
+                    END:VCALENDAR'
+                  format: svg
+                  size: 1024
+                  margin: 4
+              locationPng:
+                summary: Location QR code as PNG
+                value:
+                  value: geo:37.422,-122.084?q=1600%20Amphitheatre%20Parkway
+                  format: png
+                  size: 1024
+                  margin: 4
+              cryptoSvg:
+                summary: Bitcoin payment QR code as SVG
+                value:
+                  value: bitcoin:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080?amount=0.01
+                  format: svg
+                  size: 1024
+                  margin: 4
+              pixEps:
+                summary: PIX payment QR code as EPS
+                value:
+                  value: 00020101021126510014BR.GOV.BCB.PIX0117smoke@example.com0208SMOKE12352040000530398654041.235802BR5910SMOKE TEST6009SAO PAULO62120508SMOKE12363047B22
+                  format: eps
+                  size: 1024
+                  margin: 4
+              upiPdf:
+                summary: UPI payment QR code as PDF
+                value:
+                  value: upi://pay?pa=merchant@upi&pn=Merchant&am=10.00&cu=INR&tn=Invoice
+                  format: pdf
+                  size: 1024
+                  margin: 4
+              swishPdf:
+                summary: Swish payment QR code as PDF
+                value:
+                  value: C1234567890;125,50;Invoice%20123;0
+                  format: pdf
+                  size: 1024
+                  margin: 4
+              sepaPdf:
+                summary: SEPA credit transfer QR code as PDF
+                value:
+                  value: 'BCD
+
+                    002
+
+                    1
+
+                    SCT
+
+                    COBADEFFXXX
+
+                    Smoke Test GmbH
+
+                    DE89370400440532013000
+
+                    EUR49.90
+
+
+                    INV-2026-001'
+                  format: pdf
+                  size: 1024
+                  margin: 4
+              paypalSvg:
+                summary: PayPal.Me payment QR code as SVG
+                value:
+                  value: https://paypal.me/qrcodecrafter/25USD
+                  format: svg
+                  size: 1024
+                  margin: 4
+              venmoSvg:
+                summary: Venmo profile QR code as SVG
+                value:
+                  value: https://venmo.com/u/qrcodecrafter
+                  format: svg
+                  size: 1024
+                  margin: 4
+              cashAppSvg:
+                summary: Cash App $Cashtag QR code as SVG
+                value:
+                  value: https://cash.app/$qrcodecrafter
+                  format: svg
+                  size: 1024
+                  margin: 4
+              promptPaySvg:
+                summary: PromptPay payment QR code as SVG
+                value:
+                  value: 00020101021229370016A000000677010111011300668123456785802TH53037645406125.5063047652
+                  format: svg
+                  size: 1024
+                  margin: 4
+              vietQrSvg:
+                summary: VietQR bank transfer QR code as SVG
+                value:
+                  value: 00020101021238560010A0000007270126000697041501121133666688880208QRIBFTTA530370454061500005802VN62100806INV123630421F5
+                  format: svg
+                  size: 1024
+                  margin: 4
+              appStoreSvg:
+                summary: App Store QR code as SVG
+                value:
+                  value: https://apps.apple.com/app/id1234567890?pt=123456&ct=qr_campaign&mt=8
+                  format: svg
+                  size: 1024
+                  margin: 4
+              socialProfilePng:
+                summary: Social profile QR code as PNG
+                value:
+                  value: https://www.instagram.com/qrcodecrafter
+                  format: png
+                  size: 1024
+                  margin: 4
+              brandedLogoPng:
+                summary: Branded URL QR code with PNG logo
+                value:
+                  value: https://example.com/landing
+                  format: png
+                  size: 1024
+                  margin: 4
+                  fgColor: '#111111'
+                  bgColor: '#ffffff'
+                  errorCorrectionLevel: H
+                  logo: data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=
+      responses:
+        '200':
+          description: Generated QR code asset encoded as base64
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateQrResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Missing or invalid API key when key enforcement is enabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '405':
+          description: Method not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Too many requests. QR generation uses a cost-weighted per-client budget; honor the retry and rate-limit headers before resubmitting work.
+          headers:
+            Retry-After:
+              description: Number of seconds to wait before retrying the request
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              description: Cost budget units available in the current window for this client class
+              schema:
+                type: string
+            X-RateLimit-Remaining:
+              description: Cost budget units remaining in the current window
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+      - .netlify
+  /.netlify/functions/generate-verified-qr:
+    post:
+      summary: Generate and verify a QR code asset
+      operationId: generateVerifiedQr
+      description: Generate one SVG, PNG, JPG, or WebP asset, perform a structural payload review, assess quiet-zone, contrast, and error-correction settings, decode the final generated file with jsQR, compare payload SHA-256 hashes, and return a bounded evidence-linked receipt. Asset bytes are returned only when final-file decoding matches the requested payload. A decode failure returns HTTP 422 with the full receipt and no asset bytes. The receipt does not include the decoded payload. This is not print, device, ISO, accessibility, malware, or security certification.
+      security:
+      - AgentApiKey: []
+      - {}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateVerifiedQrRequest'
+            examples:
+              productionUrl:
+                summary: Generate and verify a production PNG
+                value:
+                  value: https://example.com/campaign
+                  format: png
+                  size: 1024
+                  margin: 4
+                  fgColor: '#111111'
+                  bgColor: '#ffffff'
+                  errorCorrectionLevel: H
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GenerateVerifiedQrRequest'
+      responses:
+        '200':
+          description: Generated asset whose final-file decode matched the requested payload, plus a bounded verification receipt
+          headers:
+            X-QR-Verification-Status:
+              description: Overall verification workflow status
+              schema:
+                type: string
+                enum:
+                - verified
+                - verified_with_cautions
+            X-QR-Asset-SHA256:
+              description: SHA-256 hash of the final generated asset bytes
+              schema:
+                type: string
+                pattern: ^[a-f0-9]{64}$
+            X-QR-Bytes:
+              description: Exact generated asset byte length
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateVerifiedQrResponse'
+            text/html:
+              schema:
+                type: string
+                description: Compact cross-document JSON-LD result without asset bytes
+        '400':
+          description: Invalid request or non-decodable output format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Missing or invalid API key when key enforcement is enabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Payload blocked before generation, or final asset failed decode or payload comparison
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/GenerateVerifiedQrBlockedResponse'
+                - $ref: '#/components/schemas/GenerateVerifiedQrFailureResponse'
+        '429':
+          description: Cost budget or verification concurrency limit reached
+          headers:
+            Retry-After:
+              description: Seconds before retrying
+              schema:
+                type: integer
+            X-RateLimit-Limit:
+              description: Cost-unit budget for the current window
+              schema:
+                type: integer
+            X-RateLimit-Remaining:
+              description: Remaining cost units
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Generation or verification pipeline error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+      - .netlify
+  /.netlify/functions/generate-qr-bulk:
+    post:
+      summary: Generate a ZIP archive of static QR code files
+      operationId: generateBulkQr
+      description: Create a ZIP archive containing up to 50 static QR code assets plus manifest.csv and manifest.json. Use this for spreadsheet, label, classroom, packaging, and agent batch workflows. The endpoint uses the same QR validation, optional API key, security headers, and cost-weighted rate-limit model as the single-code generator.
+      security:
+      - AgentApiKey: []
+      - {}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateBulkQrRequest'
+            examples:
+              csvRows:
+                summary: CSV rows into an SVG ZIP
+                value:
+                  rows: 'filename,value
+
+                    homepage,https://example.com
+
+                    support,mailto:support@example.com'
+                  format: svg
+                  size: 1024
+                  margin: 4
+                  fgColor: '#111111'
+                  bgColor: '#ffffff'
+                  errorCorrectionLevel: H
+              objectRows:
+                summary: Object rows into a PNG ZIP
+                value:
+                  rows:
+                  - filename: table-1
+                    value: https://example.com/menu?table=1
+                  - filename: table-2
+                    value: https://example.com/menu?table=2
+                  format: png
+                  size: 1024
+                  margin: 4
+      responses:
+        '200':
+          description: Generated ZIP archive returned as JSON or binary ZIP when Accept includes application/zip
+          headers:
+            X-Bulk-QR-Files:
+              description: Number of QR files generated in the ZIP
+              schema:
+                type: string
+            X-Bulk-QR-Bytes:
+              description: Exact ZIP byte length
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateBulkQrResponse'
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Invalid batch request or row data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Missing or invalid API key when key enforcement is enabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '405':
+          description: Method not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '413':
+          description: Batch request or generated ZIP is too large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Batch cost exceeds the current rate-limit budget or generation is rate limited
+          headers:
+            Retry-After:
+              description: Number of seconds to wait before retrying the request
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              description: Cost budget units available in the current window for this client class
+              schema:
+                type: string
+            X-RateLimit-Remaining:
+              description: Cost budget units remaining in the current window
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: No QR files could be generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+      - .netlify
+components:
+  schemas:
+    QrVerificationReceipt:
+      type: object
+      required:
+      - version
+      - status
+      - productionReady
+      - verifiedAt
+      - payload
+      - decode
+      - productionChecks
+      - cautions
+      - evidence
+      - limitation
+      properties:
+        version:
+          type: string
+          enum:
+          - '1.0'
+        status:
+          type: string
+          enum:
+          - verified
+          - verified_with_cautions
+          - not_detected
+          - mismatch
+        productionReady:
+          type: boolean
+          description: True only when the final asset decodes to the requested payload and every bounded workflow check passes without caution.
+        verifiedAt:
+          type: string
+          format: date-time
+        payload:
+          $ref: '#/components/schemas/QrSafePayloadReview'
+        decode:
+          type: object
+          required:
+          - decoder
+          - status
+          - requestedPayloadSha256
+          - payloadHashMatch
+          properties:
+            decoder:
+              type: string
+              enum:
+              - jsQR 1.4.0
+            status:
+              type: string
+              enum:
+              - exact_match
+              - normalized_match
+              - not_detected
+              - mismatch
+            requestedPayloadSha256:
+              type: string
+              pattern: ^[a-f0-9]{64}$
+            decodedPayloadSha256:
+              type:
+              - string
+              - 'null'
+              pattern: ^[a-f0-9]{64}$
+            payloadHashMatch:
+              type: boolean
+        productionChecks:
+          $ref: '#/components/schemas/QrProductionChecks'
+        cautions:
+          type: array
+          items:
+            type: string
+        evidence:
+          type: object
+          required:
+          - readabilityLab
+          - methodology
+          - release
+          properties:
+            readabilityLab:
+              type: string
+              format: uri
+            methodology:
+              type: string
+              format: uri
+            release:
+              type: string
+              format: uri
+        limitation:
+          type: string
+          description: Explicitly states that one software decoder and rendering pipeline do not provide print, device, ISO, accessibility, malware, or security certification.
+    BulkQrManifestRow:
+      type: object
+      properties:
+        filename:
+          type: string
+          example: homepage.svg
+        value:
+          type: string
+          example: https://example.com
+        format:
+          type: string
+          enum:
+          - svg
+          - png
+          - jpg
+          - webp
+          - pdf
+          - eps
+        status:
+          type: string
+          enum:
+          - generated
+          - failed
+        bytes:
+          type:
+          - integer
+          - 'null'
+        message:
+          type: string
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          default: false
+        error:
+          type: string
+    GenerateQrRequest:
+      type: object
+      required:
+      - value
+      x-agent-supported-content-types:
+      - url
+      - appstore
+      - social
+      - text
+      - wifi
+      - email
+      - sms
+      - phone
+      - whatsapp
+      - vcard
+      - event
+      - location
+      - crypto
+      - pix
+      - upi
+      - phonepe
+      - swish
+      - sepa
+      - ideal
+      - mobilepayvipps
+      - qris
+      - paypal
+      - venmo
+      - cashapp
+      - promptpay
+      - vietqr
+      - swissqr
+      x-agent-rate-limit:
+        model: cost-weighted per client
+        windowSeconds: 60
+        defaultBudgetUnits: 180
+        authenticatedBudgetUnits: 600
+        retryHeaders:
+        - Retry-After
+        - X-RateLimit-Limit
+        - X-RateLimit-Remaining
+        costUnits:
+          svg: 1
+          png: 3
+          jpg: 4
+          webp: 4
+          pdf: 6
+          eps: 3
+          logo: 4
+          sizeOver2048: 2
+          sizeOver3072: 4
+        guidance: Prefer SVG for high-volume tests, throttle batch jobs, and honor Retry-After before retrying 429 or 503 responses.
+      x-agent-payload-patterns:
+        url: https://example.com/path?utm_source=qr&utm_medium=print
+        appstore: https://apps.apple.com/app/id1234567890
+        social: https://www.instagram.com/qrcodecrafter
+        text: Short public text only
+        wifi: WIFI:T:WPA;S:Network Name;P:Password;H:false;;
+        email: mailto:hello@example.com?subject=Subject&body=Message
+        sms: SMSTO:+15551234567:Message
+        phone: tel:+15551234567
+        whatsapp: https://wa.me/15551234567?text=Message
+        vcard: BEGIN:VCARD\nVERSION:3.0\nFN:Name\nTEL:+15551234567\nEMAIL:hello@example.com\nEND:VCARD
+        event: BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:Event\nDTSTART:20300601T100000\nEND:VEVENT\nEND:VCALENDAR
+        location: geo:37.422,-122.084?q=1600%20Amphitheatre%20Parkway
+        crypto: bitcoin:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080?amount=0.01
+        pix: 00020101021126510014BR.GOV.BCB.PIX0117smoke@example.com0208SMOKE12352040000530398654041.235802BR5910SMOKE TEST6009SAO PAULO62120508SMOKE12363047B22
+        upi: upi://pay?pa=merchant@upi&pn=Merchant&am=10.00&cu=INR
+        phonepe: upi://pay?pa=phonepe-merchant@upi&pn=PhonePe%20Merchant&am=10.00&cu=INR&tn=Invoice
+        swish: C1234567890;125,50;Invoice%20123;0
+        sepa: BCD\n002\n1\nSCT\nCOBADEFFXXX\nSmoke Test GmbH\nDE89370400440532013000\nEUR49.90\n\nINV-2026-001
+        ideal: https://pay.example.nl/ideal/invoice-2026-001
+        mobilepayvipps: https://pay.example.com/mobilepay-vipps/invoice-2026-001
+        qris: https://merchant.example.co.id/qris/invoice-2026-001
+        paypal: https://paypal.me/qrcodecrafter/25USD
+        venmo: https://venmo.com/u/qrcodecrafter
+        cashapp: https://cash.app/$qrcodecrafter
+        promptpay: 00020101021229370016A000000677010111011300668123456785802TH53037645406125.5063047652
+        vietqr: 00020101021238560010A0000007270126000697041501121133666688880208QRIBFTTA530370454061500005802VN62100806INV123630421F5
+        swissqr: SPC\n0200\n1\nCH9300762011623852957\nS\nRobert Schneider AG\nRue du Lac\n1268\n2501\nBiel\nCH\n\n\n\n\n\n\n\n199.95\nCHF\n\n\n\n\n\n\n\nNON\n\nInvoice 2026-001\nEPD\n\n\n
+      x-agent-recipes:
+        url:
+          label: Campaign landing page
+          bestFormats:
+          - svg
+          - pdf
+          - png
+          request:
+            value: https://example.com/path?utm_source=qr&utm_medium=print&utm_campaign=spring
+            format: svg
+            size: 1024
+            margin: 4
+            fgColor: '#111111'
+            bgColor: '#ffffff'
+            errorCorrectionLevel: H
+        appstore:
+          label: App download page
+          bestFormats:
+          - svg
+          - png
+          - pdf
+          request:
+            value: https://apps.apple.com/app/id1234567890?pt=123456&ct=qr_campaign&mt=8
+            format: svg
+            size: 1024
+            margin: 4
+            fgColor: '#111111'
+            bgColor: '#ffffff'
+            errorCorrectionLevel: H
+        social:
+          label: Social profile
+          bestFormats:
+          - png
+          - svg
+          - webp
+          request:
+            value: https://www.instagram.com/qrcodecrafter
+            format: png
+            size: 1024
+            margin: 4
+            fgColor: '#111111'
+            bgColor: '#ffffff'
+            errorCorrectionLevel: H
+        text:
+          label: Public text note
+          bestFormats:
+          - png
+          - svg
+          - webp
+          request:
+            value: 'Order #A-12345 | Table 7 | Save 15% with code QR15.'
+            format: png
+            size: 1024
+            margin: 4
+            fgColor: '#111111'
+            bgColor: '#ffffff'
+            errorCorrectionLevel: H
+        wifi:
+          label: Guest Wi-Fi login
+          bestFormats:
+          - svg
+          - png
+          - pdf
+          request:
+            value: WIFI:T:WPA;S:Guest Network;P:Welcome123;H:false;;
+            format: svg
+            size: 1024
+            margin: 4
+            fgColor: '#111111'
+            bgColor: '#ffffff'
+            errorCorrectionLevel: H
+        email:
+          label: Prefilled email action
+          bestFormats:
+          - svg
+          - png
+          - jpg
+          request:
+            value: mailto:support@example.com?subject=QR%20support&body=Please%20contact%20me
+            format: svg
+            size: 1024
+            margin: 4
+            fgColor: '#111111'
+            bgColor: '#ffffff'
+            errorCorrectionLevel: H
+        sms:
+          label: Prefilled SMS action
+          bestFormats:
+          - svg
+          - png
+          - jpg
+          request:
+            value: SMSTO:+15551234567:QR smoke test
+            format: svg
+            size: 1024
+            margin: 4
+            fgColor: '#111111'
+            bgColor: '#ffffff'
+            errorCorrectionLevel: H
+        phone:
+          label: Tap-to-call phone number
+          bestFormats:
+          - svg
+          - png
+          - jpg
+          request:
+            value: tel:+15551234567
+            format: svg
+            size: 1024
+            margin: 4
+            fgColor: '#111111'
+            bgColor: '#ffffff'
+            errorCorrectionLevel: H
+        whatsapp:
+          label: WhatsApp chat link
+          bestFormats:
+          - png
+          - svg
+          - webp
+          request:
+            value: https://wa.me/15551234567?text=QR%20smoke%20test
+            format: png
+            size: 1024
+            margin: 4
+            fgColor: '#111111'
+            bgColor: '#ffffff'
+            errorCorrectionLevel: H
+        vcard:
+          label: Contact card
+          bestFormats:
+          - pdf
+          - svg
+          - png
+          request:
+            value: 'BEGIN:VCARD
+
+              VERSION:3.0
+
+              FN:Jordan Smith
+
+              TEL:+15558675309
+
+              EMAIL:hello@example.com
+
+              END:VCARD'
+            format: pdf
+            size: 1024
+            margin: 4
+            fgColor: '#111111'
+            bgColor: '#ffffff'
+            errorCorrectionLevel: H
+        event:
+          label: Calendar invite
+          bestFormats:
+          - svg
+          - png
+          - pdf
+          request:
+            value: 'BEGIN:VCALENDAR
+
+              VERSION:2.0
+
+              BEGIN:VEVENT
+
+              SUMMARY:Product Demo
+
+              DTSTART:20300601T100000
+
+              DTEND:20300601T110000
+
+              LOCATION:Online
+
+              URL:https://example.com/demo
+
+              END:VEVENT
+
+              END:VCALENDAR'
+            format: svg
+            size: 1024
+            margin: 4
+            fgColor: '#111111'
+            bgColor: '#ffffff'
+            errorCorrectionLevel: H
+        location:
+          label: Map location
+          bestFormats:
+          - png
+          - svg
+          - pdf
+          request:
+            value: geo:37.422,-122.084?q=1600%20Amphitheatre%20Parkway
+            format: png
+            size: 1024
+            margin: 4
+            fgColor: '#111111'
+            bgColor: '#ffffff'
+            errorCorrectionLevel: H
+        crypto:
+          label: Bitcoin payment URI
+          bestFormats:
+          - svg
+          - png
+          - pdf
+          request:
+            value: bitcoin:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080?amount=0.01
+            format: svg
+            size: 1024
+            margin: 4
+            fgColor: '#111111'
+            bgColor: '#ffffff'
+            errorCorrectionLevel: H
+        pix:
+          label: Brazil PIX payment
+          bestFormats:
+          - eps
+          - pdf
+          - png
+          request:
+            value: 00020101021126510014BR.GOV.BCB.PIX0117smoke@example.com0208SMOKE12352040000530398654041.235802BR5910SMOKE TEST6009SAO PAULO62120508SMOKE12363047B22
+            format: eps
+            size: 1024
+            margin: 4
+            fgColor: '#111111'
+            bgColor: '#ffffff'
+            errorCorrectionLevel: H
+        upi:
+          label: India UPI payment
+          bestFormats:
+          - pdf
+          - svg
+          - png
+          request:
+            value: upi://pay?pa=merchant@upi&pn=Merchant&am=10.00&cu=INR&tn=Invoice
+            format: pdf
+            size: 1024
+            margin: 4
+            fgColor: '#111111'
+            bgColor: '#ffffff'
+            errorCorrectionLevel: H
+        phonepe:
+          label: PhonePe-compatible UPI payment
+          bestFormats:
+          - pdf
+          - svg
+          - png
+          request:
+            value: upi://pay?pa=phonepe-merchant@upi&pn=PhonePe%20Merchant&am=10.00&cu=INR&tn=Invoice
+            format: pdf
+            size: 1024
+            margin: 4
+            fgColor: '#111111'
+            bgColor: '#ffffff'
+            errorCorrectionLevel: H
+        swish:
+          label: Sweden Swish payment
+          bestFormats:
+          - pdf
+          - svg
+          - png
+          request:
+            value: C1234567890;125,50;Invoice%20123;0
+            format: pdf
+            size: 1024
+            margin: 4
+            fgColor: '#111111'
+            bgColor: '#ffffff'
+            errorCorrectionLevel: H
+        sepa:
+          label: SEPA credit transfer payment
+          bestFormats:
+          - pdf
+          - svg
+          - png
+          request:
+            value: 'BCD
+
+              002
+
+              1
+
+              SCT
+
+              COBADEFFXXX
+
+              Smoke Test GmbH
+
+              DE89370400440532013000
+
+              EUR49.90
+
+
+              INV-2026-001'
+            format: pdf
+            size: 1024
+            margin: 4
+            fgColor: '#111111'
+            bgColor: '#ffffff'
+            errorCorrectionLevel: H
+        ideal:
+          label: iDEAL provider payment link
+          bestFormats:
+          - svg
+          - png
+          - pdf
+          request:
+            value: https://pay.example.nl/ideal/invoice-2026-001
+            format: svg
+            size: 1024
+            margin: 4
+            fgColor: '#111111'
+            bgColor: '#ffffff'
+            errorCorrectionLevel: H
+        mobilepayvipps:
+          label: MobilePay/Vipps provider payment link
+          bestFormats:
+          - svg
+          - png
+          - pdf
+          request:
+            value: https://pay.example.com/mobilepay-vipps/invoice-2026-001
+            format: svg
+            size: 1024
+            margin: 4
+            fgColor: '#111111'
+            bgColor: '#ffffff'
+            errorCorrectionLevel: H
+        qris:
+          label: QRIS supporting payment link
+          bestFormats:
+          - svg
+          - png
+          - pdf
+          request:
+            value: https://merchant.example.co.id/qris/invoice-2026-001
+            format: svg
+            size: 1024
+            margin: 4
+            fgColor: '#111111'
+            bgColor: '#ffffff'
+            errorCorrectionLevel: H
+        paypal:
+          label: PayPal.Me payment link
+          bestFormats:
+          - svg
+          - png
+          - pdf
+          request:
+            value: https://paypal.me/qrcodecrafter/25USD
+            format: svg
+            size: 1024
+            margin: 4
+            fgColor: '#111111'
+            bgColor: '#ffffff'
+            errorCorrectionLevel: H
+        venmo:
+          label: Venmo profile link
+          bestFormats:
+          - svg
+          - png
+          - pdf
+          request:
+            value: https://venmo.com/u/qrcodecrafter
+            format: svg
+            size: 1024
+            margin: 4
+            fgColor: '#111111'
+            bgColor: '#ffffff'
+            errorCorrectionLevel: H
+        cashapp:
+          label: Cash App $Cashtag link
+          bestFormats:
+          - svg
+          - png
+          - pdf
+          request:
+            value: https://cash.app/$qrcodecrafter
+            format: svg
+            size: 1024
+            margin: 4
+            fgColor: '#111111'
+            bgColor: '#ffffff'
+            errorCorrectionLevel: H
+        promptpay:
+          label: Thai PromptPay payment payload
+          bestFormats:
+          - svg
+          - png
+          - pdf
+          request:
+            value: 00020101021229370016A000000677010111011300668123456785802TH53037645406125.5063047652
+            format: svg
+            size: 1024
+            margin: 4
+            fgColor: '#111111'
+            bgColor: '#ffffff'
+            errorCorrectionLevel: H
+        vietqr:
+          label: Vietnam VietQR bank transfer payload
+          bestFormats:
+          - svg
+          - png
+          - pdf
+          request:
+            value: 00020101021238560010A0000007270126000697041501121133666688880208QRIBFTTA530370454061500005802VN62100806INV123630421F5
+            format: svg
+            size: 1024
+            margin: 4
+            fgColor: '#111111'
+            bgColor: '#ffffff'
+            errorCorrectionLevel: H
+        swissqr:
+          label: Swiss QR-bill structured-address payment payload
+          bestFormats:
+          - pdf
+          - svg
+          - eps
+          request:
+            value: 'SPC
+
+              0200
+
+              1
+
+              CH9300762011623852957
+
+              S
+
+              Robert Schneider AG
+
+              Rue du Lac
+
+              1268
+
+              2501
+
+              Biel
+
+              CH
+
+
+
+
+
+
+
+
+              199.95
+
+              CHF
+
+
+
+
+
+
+
+
+              NON
+
+
+              Invoice 2026-001
+
+              EPD
+
+
+
+              '
+            format: pdf
+            size: 1024
+            margin: 4
+            fgColor: '#111111'
+            bgColor: '#ffffff'
+            errorCorrectionLevel: H
+      properties:
+        value:
+          type: string
+          description: Data encoded in the QR code
+          maxLength: 2048
+        format:
+          type: string
+          description: Output format for the QR code asset
+          enum:
+          - svg
+          - png
+          - jpg
+          - webp
+          - pdf
+          - eps
+          default: png
+        size:
+          type: integer
+          minimum: 256
+          maximum: 4096
+          default: 1024
+          description: Pixel width/height of the generated asset
+        margin:
+          type: integer
+          minimum: 0
+          maximum: 16
+          default: 4
+          description: Quiet-zone margin around the QR code modules
+        fgColor:
+          type: string
+          pattern: ^#?[0-9a-fA-F]{6}$
+          description: 'Hex foreground color, for example #000000'
+        bgColor:
+          type: string
+          pattern: ^#?[0-9a-fA-F]{6}$
+          description: 'Hex background color, for example #FFFFFF'
+        errorCorrectionLevel:
+          type: string
+          enum:
+          - L
+          - M
+          - Q
+          - H
+          default: H
+          description: QR error correction level
+        logo:
+          type:
+          - string
+          - 'null'
+          maxLength: 1500000
+          pattern: ^data:image\/(png|jpe?g|webp);base64,.+
+          description: Optional base64 data URL for a logo (PNG, JPG, or WEBP) to composite at the center. Files larger than 1MB are rejected.
+    QrSafePayloadReview:
+      type: object
+      required:
+      - kind
+      - level
+      - displayHost
+      - protocol
+      - warnings
+      properties:
+        kind:
+          type: string
+          enum:
+          - url
+          - email
+          - phone
+          - sms
+          - wifi
+          - vcard
+          - event
+          - location
+          - payment
+          - text
+        level:
+          type: string
+          enum:
+          - clear
+          - caution
+          - blocked
+        displayHost:
+          type:
+          - string
+          - 'null'
+        protocol:
+          type:
+          - string
+          - 'null'
+          enum:
+          - 'http:'
+          - 'https:'
+        warnings:
+          type: array
+          description: Namespaced structural warning codes. No decoded payload content is included.
+          items:
+            type: string
+    GenerateBulkQrRow:
+      type: object
+      required:
+      - value
+      properties:
+        value:
+          type: string
+          maxLength: 2048
+          description: Exact QR payload to encode for this file
+        filename:
+          type: string
+          maxLength: 64
+          description: Optional filename stem. Unsafe characters are replaced before ZIP creation.
+        name:
+          type: string
+          maxLength: 64
+          description: Alternative filename stem accepted for spreadsheet-style rows.
+        label:
+          type: string
+          maxLength: 64
+          description: Alternative filename stem accepted for spreadsheet-style rows.
+    GenerateVerifiedQrBlockedResponse:
+      type: object
+      required:
+      - success
+      - error
+      - verification
+      properties:
+        success:
+          type: boolean
+          enum:
+          - false
+        error:
+          type: string
+        verification:
+          type: object
+          required:
+          - version
+          - status
+          - payload
+          - limitation
+          properties:
+            version:
+              type: string
+              enum:
+              - '1.0'
+            status:
+              type: string
+              enum:
+              - blocked
+            payload:
+              $ref: '#/components/schemas/QrSafePayloadReview'
+            limitation:
+              type: string
+    QrProductionChecks:
+      type: object
+      required:
+      - quietZone
+      - contrast
+      - errorCorrection
+      properties:
+        quietZone:
+          type: object
+          required:
+          - margin
+          - recommendedMinimum
+          - passed
+          properties:
+            margin:
+              type: integer
+            recommendedMinimum:
+              type: integer
+              enum:
+              - 4
+            passed:
+              type: boolean
+        contrast:
+          type: object
+          required:
+          - ratio
+          - workflowThreshold
+          - foregroundDarker
+          - passed
+          properties:
+            ratio:
+              type: number
+            workflowThreshold:
+              type: number
+              enum:
+              - 4.5
+            foregroundDarker:
+              type: boolean
+            passed:
+              type: boolean
+        errorCorrection:
+          type: object
+          required:
+          - level
+          - logoPresent
+          - passed
+          properties:
+            level:
+              type: string
+              enum:
+              - L
+              - M
+              - Q
+              - H
+            logoPresent:
+              type: boolean
+            passed:
+              type: boolean
+              description: Passes when no logo is present or a logo uses H error correction.
+    GenerateQrResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: string
+          description: Base64 encoded asset bytes
+        dataUrl:
+          type: string
+          description: Ready-to-embed data URL built from contentType and base64 data
+          example: data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...
+        downloadUrl:
+          type: string
+          description: Relative GET URL for retrieving the generated asset without embedding base64 bytes. Emitted only for no-logo public HTTP(S) URL payloads that do not include obvious credential-style query parameters.
+          example: /.netlify/functions/generate-qr?value=https%3A%2F%2Fexample.com&format=svg&size=1024
+        contentType:
+          type: string
+          example: image/png
+        extension:
+          type: string
+          example: png
+        suggestedFilename:
+          type: string
+          example: qrcode-example
+        byteLength:
+          type: integer
+          description: Exact number of decoded bytes in the base64 data field
+          example: 5342
+        dimensions:
+          $ref: '#/components/schemas/GeneratedAssetDimensions'
+        qrOptions:
+          type: object
+          description: Normalized QR options used to generate the asset
+          properties:
+            size:
+              type: integer
+              example: 1024
+            margin:
+              type: integer
+              example: 4
+            errorCorrectionLevel:
+              type: string
+              enum:
+              - L
+              - M
+              - Q
+              - H
+              example: H
+    GenerateBulkQrRequest:
+      type: object
+      required:
+      - rows
+      properties:
+        rows:
+          description: Up to 50 QR payload rows. Provide either a CSV string with headers such as filename,value or an array of row objects with value and optional filename fields.
+          oneOf:
+          - type: string
+            maxLength: 220000
+          - type: array
+            minItems: 1
+            maxItems: 50
+            items:
+              $ref: '#/components/schemas/GenerateBulkQrRow'
+        format:
+          type: string
+          description: Shared output format for every generated QR file in the ZIP
+          enum:
+          - svg
+          - png
+          - jpg
+          - webp
+          - pdf
+          - eps
+          default: svg
+        size:
+          type: integer
+          minimum: 256
+          maximum: 4096
+          default: 1024
+          description: Pixel width/height for SVG and raster assets, point size for EPS/PDF QR artwork
+        margin:
+          type: integer
+          minimum: 0
+          maximum: 16
+          default: 4
+          description: Quiet-zone margin around every QR code
+        fgColor:
+          type: string
+          pattern: ^#?[0-9a-fA-F]{6}$
+          default: '#111111'
+          description: Shared foreground color
+        bgColor:
+          type: string
+          pattern: ^#?[0-9a-fA-F]{6}$
+          default: '#ffffff'
+          description: Shared background color
+        errorCorrectionLevel:
+          type: string
+          enum:
+          - L
+          - M
+          - Q
+          - H
+          default: H
+          description: Shared QR error correction level
+      x-agent-rate-limit:
+        model: cost-weighted per client
+        maxRows: 50
+        defaultBudgetUnits: 180
+        authenticatedBudgetUnits: 600
+        formatCosts:
+          svg: 1
+          png: 3
+          jpg: 4
+          webp: 4
+          pdf: 6
+          eps: 3
+        guidance: Prefer SVG for large batches, split PDF/WebP/JPG batches, and request application/zip when a direct ZIP download is preferred over base64 JSON.
+    GenerateVerifiedQrFailureResponse:
+      type: object
+      required:
+      - success
+      - error
+      - verification
+      properties:
+        success:
+          type: boolean
+          enum:
+          - false
+        error:
+          type: string
+          description: Explains that no asset was returned because final-file decoding did not match the requested payload.
+        verification:
+          allOf:
+          - $ref: '#/components/schemas/QrVerificationReceipt'
+          - type: object
+            properties:
+              status:
+                type: string
+                enum:
+                - not_detected
+                - mismatch
+    GenerateBulkQrResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: string
+          description: Base64 encoded ZIP archive containing QR files plus manifest.csv and manifest.json
+        dataUrl:
+          type: string
+          description: Ready-to-download ZIP data URL
+          example: data:application/zip;base64,UEsDB...
+        contentType:
+          type: string
+          example: application/zip
+        extension:
+          type: string
+          example: zip
+        suggestedFilename:
+          type: string
+          example: qrcodecrafter-bulk-svg.zip
+        byteLength:
+          type: integer
+          description: Exact ZIP byte length
+        fileCount:
+          type: integer
+          description: Number of generated QR files in the ZIP
+        failedCount:
+          type: integer
+          description: Number of rows recorded as failed in the manifest
+        manifest:
+          type: array
+          items:
+            $ref: '#/components/schemas/BulkQrManifestRow'
+        qrOptions:
+          type: object
+          properties:
+            format:
+              type: string
+              enum:
+              - svg
+              - png
+              - jpg
+              - webp
+              - pdf
+              - eps
+            size:
+              type: integer
+            margin:
+              type: integer
+            fgColor:
+              type: string
+            bgColor:
+              type: string
+            errorCorrectionLevel:
+              type: string
+              enum:
+              - L
+              - M
+              - Q
+              - H
+    GeneratedAssetDimensions:
+      type: object
+      description: Rendered asset dimensions. Raster and SVG assets use pixels; PDF and EPS use points.
+      required:
+      - width
+      - height
+      - unit
+      properties:
+        width:
+          type: number
+          example: 1024
+        height:
+          type: number
+          example: 1024
+        unit:
+          type: string
+          enum:
+          - px
+          - pt
+          example: px
+    GenerateVerifiedQrResponse:
+      allOf:
+      - $ref: '#/components/schemas/GenerateQrResponse'
+      - type: object
+        required:
+        - success
+        - assetSha256
+        - verification
+        properties:
+          assetSha256:
+            type: string
+            pattern: ^[a-f0-9]{64}$
+            description: SHA-256 hash of the final generated asset bytes.
+          verification:
+            allOf:
+            - $ref: '#/components/schemas/QrVerificationReceipt'
+            - type: object
+              properties:
+                status:
+                  type: string
+                  enum:
+                  - verified
+                  - verified_with_cautions
+    GenerateVerifiedQrRequest:
+      allOf:
+      - $ref: '#/components/schemas/GenerateQrRequest'
+      - type: object
+        properties:
+          format:
+            type: string
+            enum:
+            - svg
+            - png
+            - jpg
+            - webp
+            default: png
+            description: Final output format. PDF and EPS are excluded because this workflow decodes the final generated asset.
+        x-agent-verification:
+          decoder: jsQR 1.4.0
+          verificationCostUnits: 2
+          blockedBeforeGeneration:
+          - embedded URL credentials
+          - private-network URL
+          - URL control characters
+          payloadRetention: Request payload is not retained; receipts contain hashes and warning codes rather than decoded payload content.
+  securitySchemes:
+    AgentApiKey:
+      type: apiKey
+      in: header
+      name: X-Agent-Api-Key
+      description: Optional API key used when integrations need scoped or rate-limited access.
+    DynamicQrBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: capability-token
+      description: Private 43-character management capability returned at creation or explicit token rotation.
+    DynamicQrVaultBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: capability-token
+      description: Private 43-character vault capability returned only when the vault is created. It authorizes the vault and all nested records; child credentials are never exposed.
+x-agent-workflows:
+  dynamicQrCampaign:
+    description: Create one to five dynamic QR redirects sequentially. Each row uses createDynamicQr; retain successful one-time management capabilities even when a later row fails. Do not retry a successful row automatically.
+    runtimeTool: create_dynamic_qr_campaign
+    visibleFormTool: create_dynamic_qr_campaign_pack
+    maxRows: 5
+    assetWorkflow: Call generateQr for each successful redirectUrl, or use the visible browser workflow to download one private ZIP with QR assets and JSON/CSV capability manifests.
+    privacy: Management URLs and tokens are unrecoverable secrets. Never publish the manifest or include management capabilities in QR artwork.
