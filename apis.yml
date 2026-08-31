@@ -26,10 +26,10 @@ created: '2026-07-24'
 modified: '2026-08-11'
 specificationVersion: '0.23'
 tags:
-  - QR Code
-  - QR Code Generation
-  - Static Qr
-  - Dynamic QR
+  - QR code
+  - QR code generation
+  - static QR
+  - dynamic QR
   - dynamic redirects
   - image export
   - bulk generation
@@ -64,6 +64,8 @@ apis:
   humanURL: https://qrcodecrafter.com/qr-code-api
   baseURL: https://qrcodecrafter.com
   tags:
+  - Dynamic QR
+  tags_raw:
   - Dynamic Qr
   properties:
   - type: OpenAPI
@@ -108,6 +110,8 @@ apis:
   humanURL: https://qrcodecrafter.com/qr-code-api
   baseURL: https://qrcodecrafter.com
   tags:
+  - Netlify
+  tags_raw:
   - .netlify
   properties:
   - type: OpenAPI
@@ -152,6 +156,8 @@ apis:
   humanURL: https://qrcodecrafter.com/qr-code-api
   baseURL: https://qrcodecrafter.com
   tags:
+  - Sendfeedback
+  tags_raw:
   - Send Feedback
   properties:
   - type: OpenAPI
