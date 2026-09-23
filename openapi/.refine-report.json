@@ -1,0 +1,52 @@
+{
+  "provider": "qr-code-crafter",
+  "sources": [
+    "_original/qr-code-crafter-openapi-original.json"
+  ],
+  "outputs": [
+    "qr-code-crafter-netlify-api-openapi.yml",
+    "qr-code-crafter-dynamic-qr-api-openapi.yml",
+    "qr-code-crafter-dynamic-qr-vaults-api-openapi.yml",
+    "qr-code-crafter-r-api-openapi.yml",
+    "qr-code-crafter-send-feedback-api-openapi.yml"
+  ],
+  "archived": [],
+  "errors": [],
+  "warnings": [],
+  "notes": [
+    "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
+    "qr-code-crafter-openapi-original.json: upgraded openapi 3.0.1 -> OpenAPI 3.2.0",
+    "qr-code-crafter-openapi-original.json: tagged paths GET /.netlify/functions/generate-qr -> .netlify",
+    "qr-code-crafter-openapi-original.json: tagged paths POST /.netlify/functions/generate-qr -> .netlify",
+    "qr-code-crafter-openapi-original.json: tagged paths POST /.netlify/functions/generate-verified-qr -> .netlify",
+    "qr-code-crafter-openapi-original.json: tagged paths POST /.netlify/functions/generate-qr-bulk -> .netlify",
+    "qr-code-crafter-openapi-original.json: tagged paths POST /api/send-feedback -> Send Feedback",
+    "qr-code-crafter-openapi-original.json: tagged paths POST /api/dynamic-qr -> Dynamic Qr",
+    "qr-code-crafter-openapi-original.json: tagged paths GET /api/dynamic-qr/{slug} -> Dynamic Qr",
+    "qr-code-crafter-openapi-original.json: tagged paths PATCH /api/dynamic-qr/{slug} -> Dynamic Qr",
+    "qr-code-crafter-openapi-original.json: tagged paths DELETE /api/dynamic-qr/{slug} -> Dynamic Qr",
+    "qr-code-crafter-openapi-original.json: tagged paths POST /api/dynamic-qr-vaults -> Dynamic Qr Vaults",
+    "qr-code-crafter-openapi-original.json: tagged paths GET /api/dynamic-qr-vaults/{vaultId} -> Dynamic Qr Vaults",
+    "qr-code-crafter-openapi-original.json: tagged paths PATCH /api/dynamic-qr-vaults/{vaultId} -> Dynamic Qr Vaults",
+    "qr-code-crafter-openapi-original.json: tagged paths DELETE /api/dynamic-qr-vaults/{vaultId} -> Dynamic Qr Vaults",
+    "qr-code-crafter-openapi-original.json: tagged paths POST /api/dynamic-qr-vaults/{vaultId}/qr -> Dynamic Qr Vaults",
+    "qr-code-crafter-openapi-original.json: tagged paths PATCH /api/dynamic-qr-vaults/{vaultId}/qr/{slug} -> Dynamic Qr Vaults",
+    "qr-code-crafter-openapi-original.json: tagged paths GET /api/dynamic-qr-vaults/{vaultId}/qr/{slug}/analytics -> Dynamic Qr Vaults",
+    "qr-code-crafter-openapi-original.json: tagged paths DELETE /api/dynamic-qr-vaults/{vaultId}/qr/{slug}/analytics -> Dynamic Qr Vaults",
+    "qr-code-crafter-openapi-original.json: tagged paths GET /r/{slug} -> R",
+    "qr-code-crafter-openapi-original.json: tagged paths HEAD /r/{slug} -> R",
+    "qr-code-crafter-openapi-original.json: declared missing tag: .netlify",
+    "qr-code-crafter-openapi-original.json: declared missing tag: Dynamic Qr",
+    "qr-code-crafter-openapi-original.json: declared missing tag: Dynamic Qr Vaults",
+    "qr-code-crafter-openapi-original.json: declared missing tag: R",
+    "qr-code-crafter-openapi-original.json: declared missing tag: Send Feedback",
+    "apis.yml register: already-registered"
+  ],
+  "skipped": [
+    "qr-code-crafter-dynamic-qr-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "qr-code-crafter-dynamic-qr-vaults-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "qr-code-crafter-netlify-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "qr-code-crafter-r-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "qr-code-crafter-send-feedback-api-openapi.yml: previously refined output, superseded by openapi/_original/"
+  ]
+}

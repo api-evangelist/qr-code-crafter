@@ -344,27 +344,48 @@ paths:
       tags:
       - Dynamic Qr Vaults
 components:
+  parameters:
+    DynamicQrVaultId:
+      name: vaultId
+      in: path
+      required: true
+      description: 22-character vault identifier; not sufficient for authorization
+      schema:
+        type: string
+        pattern: ^[A-Za-z0-9_-]{22}$
+    DynamicQrSlug:
+      name: slug
+      in: path
+      required: true
+      description: 22-character dynamic QR identifier
+      schema:
+        type: string
+        pattern: ^[A-Za-z0-9_-]{22}$
+    DynamicQrVersionMatch:
+      name: X-Dynamic-QR-Version
+      in: header
+      required: false
+      description: Stable mirror of If-Match for intermediaries that rewrite or remove standard conditional headers
+      schema:
+        type: string
+        maxLength: 256
+    DynamicQrVaultVersionMatch:
+      name: X-Dynamic-QR-Vault-Version
+      in: header
+      required: false
+      description: Stable mirror of the current vault ETag for intermediaries that rewrite conditional headers
+      schema:
+        type: string
+        maxLength: 256
+    IfMatch:
+      name: If-Match
+      in: header
+      required: true
+      description: Exact value returned by X-Dynamic-QR-Version, or the ETag when no intermediary has rewritten it
+      schema:
+        type: string
+        maxLength: 256
   schemas:
-    DynamicQrVaultCreateRequest:
-      type: object
-      additionalProperties: false
-      properties:
-        name:
-          type: string
-          maxLength: 80
-    DynamicQrVaultChildMetadata:
-      type: object
-      properties:
-        folder:
-          type: string
-          maxLength: 40
-        tags:
-          type: array
-          maxItems: 8
-          items:
-            type: string
-            minLength: 1
-            maxLength: 24
     DynamicQrVaultRecord:
       type: object
       description: Public authorized representation. Never contains managementTokenHash, qrSlugs, child credentials, or internal storage fields.
@@ -403,62 +424,6 @@ components:
           maxItems: 50
           items:
             $ref: '#/components/schemas/DynamicQrVaultChildRecord'
-    DynamicQrVaultChildAnalyticsResponse:
-      type: object
-      additionalProperties: false
-      required:
-      - success
-      - slug
-      properties:
-        success:
-          type: boolean
-        slug:
-          type: string
-          pattern: ^[A-Za-z0-9_-]{22}$
-        analytics:
-          $ref: '#/components/schemas/DynamicQrAnalyticsSummary'
-    DynamicQrVaultRenameRequest:
-      type: object
-      additionalProperties: false
-      required:
-      - name
-      properties:
-        name:
-          type: string
-          maxLength: 80
-    DynamicQrVaultChildResponse:
-      type: object
-      required:
-      - success
-      - record
-      properties:
-        success:
-          type: boolean
-        record:
-          $ref: '#/components/schemas/DynamicQrVaultChildRecord'
-    DynamicQrVaultCreateResponse:
-      allOf:
-      - $ref: '#/components/schemas/DynamicQrVaultResponse'
-      - type: object
-        required:
-        - managementToken
-        - managementUrl
-        properties:
-          managementToken:
-            type: string
-            pattern: ^[A-Za-z0-9_-]{43}$
-            description: One-time vault bearer capability, returned only on creation.
-          managementUrl:
-            type: string
-            format: uri
-    Error:
-      type: object
-      properties:
-        success:
-          type: boolean
-          default: false
-        error:
-          type: string
     DynamicQrVaultChildCreateRequest:
       type: object
       additionalProperties: false
@@ -483,6 +448,56 @@ components:
             type: string
             minLength: 1
             maxLength: 24
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          default: false
+        error:
+          type: string
+    DynamicQrVaultChildRecord:
+      allOf:
+      - $ref: '#/components/schemas/DynamicQrRecord'
+      - $ref: '#/components/schemas/DynamicQrVaultChildMetadata'
+    DynamicQrVaultChildAnalyticsResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - slug
+      properties:
+        success:
+          type: boolean
+        slug:
+          type: string
+          pattern: ^[A-Za-z0-9_-]{22}$
+        analytics:
+          $ref: '#/components/schemas/DynamicQrAnalyticsSummary'
+    DynamicQrVaultCreateResponse:
+      allOf:
+      - $ref: '#/components/schemas/DynamicQrVaultResponse'
+      - type: object
+        required:
+        - managementToken
+        - managementUrl
+        properties:
+          managementToken:
+            type: string
+            pattern: ^[A-Za-z0-9_-]{43}$
+            description: One-time vault bearer capability, returned only on creation.
+          managementUrl:
+            type: string
+            format: uri
+    DynamicQrVaultRenameRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - name
+      properties:
+        name:
+          type: string
+          maxLength: 80
     DynamicQrVaultChildUpdateRequest:
       type: object
       additionalProperties: false
@@ -511,16 +526,56 @@ components:
             type: string
             minLength: 1
             maxLength: 24
-    DynamicQrVaultResponse:
+    DynamicQrVaultChildResponse:
       type: object
       required:
       - success
-      - vault
+      - record
       properties:
         success:
           type: boolean
-        vault:
-          $ref: '#/components/schemas/DynamicQrVaultRecord'
+        record:
+          $ref: '#/components/schemas/DynamicQrVaultChildRecord'
+    DynamicQrRecord:
+      type: object
+      required:
+      - slug
+      - destination
+      - label
+      - status
+      - version
+      - createdAt
+      - updatedAt
+      properties:
+        slug:
+          type: string
+          pattern: ^[A-Za-z0-9_-]{22}$
+        destination:
+          type: string
+          format: uri
+        label:
+          type: string
+        status:
+          type: string
+          enum:
+          - active
+          - paused
+        version:
+          type: integer
+          minimum: 1
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    DynamicQrVaultCreateRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          maxLength: 80
     DynamicQrAnalyticsSummary:
       type: object
       description: Enabled on the production deployment. The analytics property remains optional so non-production or deliberately disabled deployments can omit it.
@@ -570,95 +625,40 @@ components:
         lastCountedAt:
           type: string
           format: date-time
-    DynamicQrVaultChildRecord:
-      allOf:
-      - $ref: '#/components/schemas/DynamicQrRecord'
-      - $ref: '#/components/schemas/DynamicQrVaultChildMetadata'
-    DynamicQrRecord:
+    DynamicQrVaultResponse:
       type: object
       required:
-      - slug
-      - destination
-      - label
-      - status
-      - version
-      - createdAt
-      - updatedAt
+      - success
+      - vault
       properties:
-        slug:
+        success:
+          type: boolean
+        vault:
+          $ref: '#/components/schemas/DynamicQrVaultRecord'
+    DynamicQrVaultChildMetadata:
+      type: object
+      properties:
+        folder:
           type: string
-          pattern: ^[A-Za-z0-9_-]{22}$
-        destination:
-          type: string
-          format: uri
-        label:
-          type: string
-        status:
-          type: string
-          enum:
-          - active
-          - paused
-        version:
-          type: integer
-          minimum: 1
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-  parameters:
-    DynamicQrVaultVersionMatch:
-      name: X-Dynamic-QR-Vault-Version
-      in: header
-      required: false
-      description: Stable mirror of the current vault ETag for intermediaries that rewrite conditional headers
-      schema:
-        type: string
-        maxLength: 256
-    IfMatch:
-      name: If-Match
-      in: header
-      required: true
-      description: Exact value returned by X-Dynamic-QR-Version, or the ETag when no intermediary has rewritten it
-      schema:
-        type: string
-        maxLength: 256
-    DynamicQrSlug:
-      name: slug
-      in: path
-      required: true
-      description: 22-character dynamic QR identifier
-      schema:
-        type: string
-        pattern: ^[A-Za-z0-9_-]{22}$
-    DynamicQrVersionMatch:
-      name: X-Dynamic-QR-Version
-      in: header
-      required: false
-      description: Stable mirror of If-Match for intermediaries that rewrite or remove standard conditional headers
-      schema:
-        type: string
-        maxLength: 256
-    DynamicQrVaultId:
-      name: vaultId
-      in: path
-      required: true
-      description: 22-character vault identifier; not sufficient for authorization
-      schema:
-        type: string
-        pattern: ^[A-Za-z0-9_-]{22}$
+          maxLength: 40
+        tags:
+          type: array
+          maxItems: 8
+          items:
+            type: string
+            minLength: 1
+            maxLength: 24
   headers:
+    ETag:
+      description: Opaque record version validator for conditional updates
+      schema:
+        type: string
     DynamicQrVersion:
       description: Stable record version validator mirrored separately because some development proxies rewrite ETag
       schema:
         type: string
     DynamicQrVaultVersion:
       description: Stable vault version validator. It is distinct from a nested child record validator.
-      schema:
-        type: string
-    ETag:
-      description: Opaque record version validator for conditional updates
       schema:
         type: string
   securitySchemes:
