@@ -253,6 +253,39 @@ components:
         type: string
         maxLength: 256
   schemas:
+    DynamicQrRecord:
+      type: object
+      required:
+      - slug
+      - destination
+      - label
+      - status
+      - version
+      - createdAt
+      - updatedAt
+      properties:
+        slug:
+          type: string
+          pattern: ^[A-Za-z0-9_-]{22}$
+        destination:
+          type: string
+          format: uri
+        label:
+          type: string
+        status:
+          type: string
+          enum:
+          - active
+          - paused
+        version:
+          type: integer
+          minimum: 1
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
     DynamicQrUpdateRequest:
       type: object
       additionalProperties: false
@@ -274,18 +307,6 @@ components:
         rotateToken:
           type: boolean
           description: Replace the bearer capability and return the new token once in the response.
-    DynamicQrUpdateResponse:
-      allOf:
-      - $ref: '#/components/schemas/DynamicQrManageResponse'
-      - type: object
-        properties:
-          managementToken:
-            type: string
-            pattern: ^[A-Za-z0-9_-]{43}$
-            description: Present only when rotateToken is true; store it because it is not returned again.
-          managementUrl:
-            type: string
-            format: uri
     DynamicQrCreateRequest:
       type: object
       additionalProperties: false
@@ -301,6 +322,18 @@ components:
         label:
           type: string
           maxLength: 80
+    DynamicQrUpdateResponse:
+      allOf:
+      - $ref: '#/components/schemas/DynamicQrManageResponse'
+      - type: object
+        properties:
+          managementToken:
+            type: string
+            pattern: ^[A-Za-z0-9_-]{43}$
+            description: Present only when rotateToken is true; store it because it is not returned again.
+          managementUrl:
+            type: string
+            format: uri
     DynamicQrAnalyticsSummary:
       type: object
       description: Enabled on the production deployment. The analytics property remains optional so non-production or deliberately disabled deployments can omit it.
@@ -350,30 +383,6 @@ components:
         lastCountedAt:
           type: string
           format: date-time
-    DynamicQrCreateResponse:
-      type: object
-      required:
-      - success
-      - record
-      - managementToken
-      - redirectUrl
-      - managementUrl
-      properties:
-        success:
-          type: boolean
-          example: true
-        record:
-          $ref: '#/components/schemas/DynamicQrRecord'
-        managementToken:
-          type: string
-          pattern: ^[A-Za-z0-9_-]{43}$
-          description: One-time bearer capability. It is never returned by later reads.
-        redirectUrl:
-          type: string
-          format: uri
-        managementUrl:
-          type: string
-          format: uri
     Error:
       type: object
       properties:
@@ -398,39 +407,30 @@ components:
           format: uri
         analytics:
           $ref: '#/components/schemas/DynamicQrAnalyticsSummary'
-    DynamicQrRecord:
+    DynamicQrCreateResponse:
       type: object
       required:
-      - slug
-      - destination
-      - label
-      - status
-      - version
-      - createdAt
-      - updatedAt
+      - success
+      - record
+      - managementToken
+      - redirectUrl
+      - managementUrl
       properties:
-        slug:
+        success:
+          type: boolean
+          example: true
+        record:
+          $ref: '#/components/schemas/DynamicQrRecord'
+        managementToken:
           type: string
-          pattern: ^[A-Za-z0-9_-]{22}$
-        destination:
+          pattern: ^[A-Za-z0-9_-]{43}$
+          description: One-time bearer capability. It is never returned by later reads.
+        redirectUrl:
           type: string
           format: uri
-        label:
+        managementUrl:
           type: string
-        status:
-          type: string
-          enum:
-          - active
-          - paused
-        version:
-          type: integer
-          minimum: 1
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
+          format: uri
   headers:
     DynamicQrVersion:
       description: Stable record version validator mirrored separately because some development proxies rewrite ETag

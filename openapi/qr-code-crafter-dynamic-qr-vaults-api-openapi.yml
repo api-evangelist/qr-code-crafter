@@ -344,198 +344,14 @@ paths:
       tags:
       - Dynamic Qr Vaults
 components:
-  parameters:
-    DynamicQrVaultId:
-      name: vaultId
-      in: path
-      required: true
-      description: 22-character vault identifier; not sufficient for authorization
-      schema:
-        type: string
-        pattern: ^[A-Za-z0-9_-]{22}$
-    DynamicQrSlug:
-      name: slug
-      in: path
-      required: true
-      description: 22-character dynamic QR identifier
-      schema:
-        type: string
-        pattern: ^[A-Za-z0-9_-]{22}$
-    DynamicQrVersionMatch:
-      name: X-Dynamic-QR-Version
-      in: header
-      required: false
-      description: Stable mirror of If-Match for intermediaries that rewrite or remove standard conditional headers
-      schema:
-        type: string
-        maxLength: 256
-    DynamicQrVaultVersionMatch:
-      name: X-Dynamic-QR-Vault-Version
-      in: header
-      required: false
-      description: Stable mirror of the current vault ETag for intermediaries that rewrite conditional headers
-      schema:
-        type: string
-        maxLength: 256
-    IfMatch:
-      name: If-Match
-      in: header
-      required: true
-      description: Exact value returned by X-Dynamic-QR-Version, or the ETag when no intermediary has rewritten it
-      schema:
-        type: string
-        maxLength: 256
   schemas:
-    DynamicQrVaultRecord:
-      type: object
-      description: Public authorized representation. Never contains managementTokenHash, qrSlugs, child credentials, or internal storage fields.
-      required:
-      - vaultId
-      - name
-      - version
-      - createdAt
-      - updatedAt
-      - emptyExpiresAt
-      - records
-      properties:
-        vaultId:
-          type: string
-          pattern: ^[A-Za-z0-9_-]{22}$
-        name:
-          type: string
-          maxLength: 80
-        version:
-          type: integer
-          minimum: 1
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-        emptyExpiresAt:
-          type:
-          - string
-          - 'null'
-          format: date-time
-          description: Empty projects expire after six hours. This is null once the project contains a QR code.
-        records:
-          type: array
-          maxItems: 50
-          items:
-            $ref: '#/components/schemas/DynamicQrVaultChildRecord'
-    DynamicQrVaultChildCreateRequest:
+    DynamicQrVaultCreateRequest:
       type: object
       additionalProperties: false
-      required:
-      - destination
-      properties:
-        destination:
-          type: string
-          format: uri
-          pattern: ^https://
-          maxLength: 2048
-        label:
-          type: string
-          maxLength: 80
-        folder:
-          type: string
-          maxLength: 40
-        tags:
-          type: array
-          maxItems: 8
-          items:
-            type: string
-            minLength: 1
-            maxLength: 24
-    Error:
-      type: object
-      properties:
-        success:
-          type: boolean
-          default: false
-        error:
-          type: string
-    DynamicQrVaultChildRecord:
-      allOf:
-      - $ref: '#/components/schemas/DynamicQrRecord'
-      - $ref: '#/components/schemas/DynamicQrVaultChildMetadata'
-    DynamicQrVaultChildAnalyticsResponse:
-      type: object
-      additionalProperties: false
-      required:
-      - success
-      - slug
-      properties:
-        success:
-          type: boolean
-        slug:
-          type: string
-          pattern: ^[A-Za-z0-9_-]{22}$
-        analytics:
-          $ref: '#/components/schemas/DynamicQrAnalyticsSummary'
-    DynamicQrVaultCreateResponse:
-      allOf:
-      - $ref: '#/components/schemas/DynamicQrVaultResponse'
-      - type: object
-        required:
-        - managementToken
-        - managementUrl
-        properties:
-          managementToken:
-            type: string
-            pattern: ^[A-Za-z0-9_-]{43}$
-            description: One-time vault bearer capability, returned only on creation.
-          managementUrl:
-            type: string
-            format: uri
-    DynamicQrVaultRenameRequest:
-      type: object
-      additionalProperties: false
-      required:
-      - name
       properties:
         name:
           type: string
           maxLength: 80
-    DynamicQrVaultChildUpdateRequest:
-      type: object
-      additionalProperties: false
-      minProperties: 1
-      properties:
-        destination:
-          type: string
-          format: uri
-          pattern: ^https://
-          maxLength: 2048
-        label:
-          type: string
-          maxLength: 80
-        status:
-          type: string
-          enum:
-          - active
-          - paused
-        folder:
-          type: string
-          maxLength: 40
-        tags:
-          type: array
-          maxItems: 8
-          items:
-            type: string
-            minLength: 1
-            maxLength: 24
-    DynamicQrVaultChildResponse:
-      type: object
-      required:
-      - success
-      - record
-      properties:
-        success:
-          type: boolean
-        record:
-          $ref: '#/components/schemas/DynamicQrVaultChildRecord'
     DynamicQrRecord:
       type: object
       required:
@@ -569,13 +385,30 @@ components:
         updatedAt:
           type: string
           format: date-time
-    DynamicQrVaultCreateRequest:
+    DynamicQrVaultChildCreateRequest:
       type: object
       additionalProperties: false
+      required:
+      - destination
       properties:
-        name:
+        destination:
+          type: string
+          format: uri
+          pattern: ^https://
+          maxLength: 2048
+        label:
           type: string
           maxLength: 80
+        folder:
+          type: string
+          maxLength: 40
+        tags:
+          type: array
+          maxItems: 8
+          items:
+            type: string
+            minLength: 1
+            maxLength: 24
     DynamicQrAnalyticsSummary:
       type: object
       description: Enabled on the production deployment. The analytics property remains optional so non-production or deliberately disabled deployments can omit it.
@@ -625,6 +458,10 @@ components:
         lastCountedAt:
           type: string
           format: date-time
+    DynamicQrVaultChildRecord:
+      allOf:
+      - $ref: '#/components/schemas/DynamicQrRecord'
+      - $ref: '#/components/schemas/DynamicQrVaultChildMetadata'
     DynamicQrVaultResponse:
       type: object
       required:
@@ -635,6 +472,90 @@ components:
           type: boolean
         vault:
           $ref: '#/components/schemas/DynamicQrVaultRecord'
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          default: false
+        error:
+          type: string
+    DynamicQrVaultChildUpdateRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        destination:
+          type: string
+          format: uri
+          pattern: ^https://
+          maxLength: 2048
+        label:
+          type: string
+          maxLength: 80
+        status:
+          type: string
+          enum:
+          - active
+          - paused
+        folder:
+          type: string
+          maxLength: 40
+        tags:
+          type: array
+          maxItems: 8
+          items:
+            type: string
+            minLength: 1
+            maxLength: 24
+    DynamicQrVaultRenameRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - name
+      properties:
+        name:
+          type: string
+          maxLength: 80
+    DynamicQrVaultChildAnalyticsResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - slug
+      properties:
+        success:
+          type: boolean
+        slug:
+          type: string
+          pattern: ^[A-Za-z0-9_-]{22}$
+        analytics:
+          $ref: '#/components/schemas/DynamicQrAnalyticsSummary'
+    DynamicQrVaultCreateResponse:
+      allOf:
+      - $ref: '#/components/schemas/DynamicQrVaultResponse'
+      - type: object
+        required:
+        - managementToken
+        - managementUrl
+        properties:
+          managementToken:
+            type: string
+            pattern: ^[A-Za-z0-9_-]{43}$
+            description: One-time vault bearer capability, returned only on creation.
+          managementUrl:
+            type: string
+            format: uri
+    DynamicQrVaultChildResponse:
+      type: object
+      required:
+      - success
+      - record
+      properties:
+        success:
+          type: boolean
+        record:
+          $ref: '#/components/schemas/DynamicQrVaultChildRecord'
     DynamicQrVaultChildMetadata:
       type: object
       properties:
@@ -648,17 +569,96 @@ components:
             type: string
             minLength: 1
             maxLength: 24
+    DynamicQrVaultRecord:
+      type: object
+      description: Public authorized representation. Never contains managementTokenHash, qrSlugs, child credentials, or internal storage fields.
+      required:
+      - vaultId
+      - name
+      - version
+      - createdAt
+      - updatedAt
+      - emptyExpiresAt
+      - records
+      properties:
+        vaultId:
+          type: string
+          pattern: ^[A-Za-z0-9_-]{22}$
+        name:
+          type: string
+          maxLength: 80
+        version:
+          type: integer
+          minimum: 1
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        emptyExpiresAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: Empty projects expire after six hours. This is null once the project contains a QR code.
+        records:
+          type: array
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/DynamicQrVaultChildRecord'
+  parameters:
+    DynamicQrVersionMatch:
+      name: X-Dynamic-QR-Version
+      in: header
+      required: false
+      description: Stable mirror of If-Match for intermediaries that rewrite or remove standard conditional headers
+      schema:
+        type: string
+        maxLength: 256
+    DynamicQrSlug:
+      name: slug
+      in: path
+      required: true
+      description: 22-character dynamic QR identifier
+      schema:
+        type: string
+        pattern: ^[A-Za-z0-9_-]{22}$
+    DynamicQrVaultId:
+      name: vaultId
+      in: path
+      required: true
+      description: 22-character vault identifier; not sufficient for authorization
+      schema:
+        type: string
+        pattern: ^[A-Za-z0-9_-]{22}$
+    DynamicQrVaultVersionMatch:
+      name: X-Dynamic-QR-Vault-Version
+      in: header
+      required: false
+      description: Stable mirror of the current vault ETag for intermediaries that rewrite conditional headers
+      schema:
+        type: string
+        maxLength: 256
+    IfMatch:
+      name: If-Match
+      in: header
+      required: true
+      description: Exact value returned by X-Dynamic-QR-Version, or the ETag when no intermediary has rewritten it
+      schema:
+        type: string
+        maxLength: 256
   headers:
-    ETag:
-      description: Opaque record version validator for conditional updates
+    DynamicQrVaultVersion:
+      description: Stable vault version validator. It is distinct from a nested child record validator.
       schema:
         type: string
     DynamicQrVersion:
       description: Stable record version validator mirrored separately because some development proxies rewrite ETag
       schema:
         type: string
-    DynamicQrVaultVersion:
-      description: Stable vault version validator. It is distinct from a nested child record validator.
+    ETag:
+      description: Opaque record version validator for conditional updates
       schema:
         type: string
   securitySchemes:

@@ -78,7 +78,6 @@ apis:
   name: QR Code Crafter Dynamic Qr API
   description: The Dynamic Qr API from QR Code Crafter — 2 operation(s) for dynamic qr.
   humanURL: https://qrcodecrafter.com/qr-code-api
-  baseURL: https://qrcodecrafter.com
   tags:
   - Dynamic QR
   tags_raw:
@@ -102,7 +101,6 @@ apis:
   name: QR Code Crafter Dynamic Qr Vaults API
   description: The Dynamic Qr Vaults API from QR Code Crafter — 5 operation(s) for dynamic qr vaults.
   humanURL: https://qrcodecrafter.com/qr-code-api
-  baseURL: https://qrcodecrafter.com
   tags:
   - Dynamic Qr Vaults
   properties:
@@ -124,7 +122,6 @@ apis:
   name: QR Code Crafter .netlify API
   description: The .netlify API from QR Code Crafter — 3 operation(s) for .netlify.
   humanURL: https://qrcodecrafter.com/qr-code-api
-  baseURL: https://qrcodecrafter.com
   tags:
   - Netlify
   tags_raw:
@@ -148,7 +145,6 @@ apis:
   name: QR Code Crafter R API
   description: The R API from QR Code Crafter — 1 operation(s) for r.
   humanURL: https://qrcodecrafter.com/qr-code-api
-  baseURL: https://qrcodecrafter.com
   tags:
   - R
   properties:
@@ -170,7 +166,6 @@ apis:
   name: QR Code Crafter Send Feedback API
   description: The Send Feedback API from QR Code Crafter — 1 operation(s) for send feedback.
   humanURL: https://qrcodecrafter.com/qr-code-api
-  baseURL: https://qrcodecrafter.com
   tags:
   - Sendfeedback
   tags_raw:
