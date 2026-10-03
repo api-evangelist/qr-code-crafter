@@ -692,432 +692,6 @@ components:
           type: string
           maxLength: 64
           description: Alternative filename stem accepted for spreadsheet-style rows.
-    GenerateBulkQrRequest:
-      type: object
-      required:
-      - rows
-      properties:
-        rows:
-          description: Up to 50 QR payload rows. Provide either a CSV string with headers such as filename,value or an array of row objects with value and optional filename fields.
-          oneOf:
-          - type: string
-            maxLength: 220000
-          - type: array
-            minItems: 1
-            maxItems: 50
-            items:
-              $ref: '#/components/schemas/GenerateBulkQrRow'
-        format:
-          type: string
-          description: Shared output format for every generated QR file in the ZIP
-          enum:
-          - svg
-          - png
-          - jpg
-          - webp
-          - pdf
-          - eps
-          default: svg
-        size:
-          type: integer
-          minimum: 256
-          maximum: 4096
-          default: 1024
-          description: Pixel width/height for SVG and raster assets, point size for EPS/PDF QR artwork
-        margin:
-          type: integer
-          minimum: 0
-          maximum: 16
-          default: 4
-          description: Quiet-zone margin around every QR code
-        fgColor:
-          type: string
-          pattern: ^#?[0-9a-fA-F]{6}$
-          default: '#111111'
-          description: Shared foreground color
-        bgColor:
-          type: string
-          pattern: ^#?[0-9a-fA-F]{6}$
-          default: '#ffffff'
-          description: Shared background color
-        errorCorrectionLevel:
-          type: string
-          enum:
-          - L
-          - M
-          - Q
-          - H
-          default: H
-          description: Shared QR error correction level
-      x-agent-rate-limit:
-        model: cost-weighted per client
-        maxRows: 50
-        defaultBudgetUnits: 180
-        authenticatedBudgetUnits: 600
-        formatCosts:
-          svg: 1
-          png: 3
-          jpg: 4
-          webp: 4
-          pdf: 6
-          eps: 3
-        guidance: Prefer SVG for large batches, split PDF/WebP/JPG batches, and request application/zip when a direct ZIP download is preferred over base64 JSON.
-    GenerateVerifiedQrResponse:
-      allOf:
-      - $ref: '#/components/schemas/GenerateQrResponse'
-      - type: object
-        required:
-        - success
-        - assetSha256
-        - verification
-        properties:
-          assetSha256:
-            type: string
-            pattern: ^[a-f0-9]{64}$
-            description: SHA-256 hash of the final generated asset bytes.
-          verification:
-            allOf:
-            - $ref: '#/components/schemas/QrVerificationReceipt'
-            - type: object
-              properties:
-                status:
-                  type: string
-                  enum:
-                  - verified
-                  - verified_with_cautions
-    QrVerificationReceipt:
-      type: object
-      required:
-      - version
-      - status
-      - productionReady
-      - verifiedAt
-      - payload
-      - decode
-      - productionChecks
-      - cautions
-      - evidence
-      - limitation
-      properties:
-        version:
-          type: string
-          enum:
-          - '1.0'
-        status:
-          type: string
-          enum:
-          - verified
-          - verified_with_cautions
-          - not_detected
-          - mismatch
-        productionReady:
-          type: boolean
-          description: True only when the final asset decodes to the requested payload and every bounded workflow check passes without caution.
-        verifiedAt:
-          type: string
-          format: date-time
-        payload:
-          $ref: '#/components/schemas/QrSafePayloadReview'
-        decode:
-          type: object
-          required:
-          - decoder
-          - status
-          - requestedPayloadSha256
-          - payloadHashMatch
-          properties:
-            decoder:
-              type: string
-              enum:
-              - jsQR 1.4.0
-            status:
-              type: string
-              enum:
-              - exact_match
-              - normalized_match
-              - not_detected
-              - mismatch
-            requestedPayloadSha256:
-              type: string
-              pattern: ^[a-f0-9]{64}$
-            decodedPayloadSha256:
-              type:
-              - string
-              - 'null'
-              pattern: ^[a-f0-9]{64}$
-            payloadHashMatch:
-              type: boolean
-        productionChecks:
-          $ref: '#/components/schemas/QrProductionChecks'
-        cautions:
-          type: array
-          items:
-            type: string
-        evidence:
-          type: object
-          required:
-          - readabilityLab
-          - methodology
-          - release
-          properties:
-            readabilityLab:
-              type: string
-              format: uri
-            methodology:
-              type: string
-              format: uri
-            release:
-              type: string
-              format: uri
-        limitation:
-          type: string
-          description: Explicitly states that one software decoder and rendering pipeline do not provide print, device, ISO, accessibility, malware, or security certification.
-    BulkQrManifestRow:
-      type: object
-      properties:
-        filename:
-          type: string
-          example: homepage.svg
-        value:
-          type: string
-          example: https://example.com
-        format:
-          type: string
-          enum:
-          - svg
-          - png
-          - jpg
-          - webp
-          - pdf
-          - eps
-        status:
-          type: string
-          enum:
-          - generated
-          - failed
-        bytes:
-          type:
-          - integer
-          - 'null'
-        message:
-          type: string
-    GenerateBulkQrResponse:
-      type: object
-      properties:
-        success:
-          type: boolean
-          example: true
-        data:
-          type: string
-          description: Base64 encoded ZIP archive containing QR files plus manifest.csv and manifest.json
-        dataUrl:
-          type: string
-          description: Ready-to-download ZIP data URL
-          example: data:application/zip;base64,UEsDB...
-        contentType:
-          type: string
-          example: application/zip
-        extension:
-          type: string
-          example: zip
-        suggestedFilename:
-          type: string
-          example: qrcodecrafter-bulk-svg.zip
-        byteLength:
-          type: integer
-          description: Exact ZIP byte length
-        fileCount:
-          type: integer
-          description: Number of generated QR files in the ZIP
-        failedCount:
-          type: integer
-          description: Number of rows recorded as failed in the manifest
-        manifest:
-          type: array
-          items:
-            $ref: '#/components/schemas/BulkQrManifestRow'
-        qrOptions:
-          type: object
-          properties:
-            format:
-              type: string
-              enum:
-              - svg
-              - png
-              - jpg
-              - webp
-              - pdf
-              - eps
-            size:
-              type: integer
-            margin:
-              type: integer
-            fgColor:
-              type: string
-            bgColor:
-              type: string
-            errorCorrectionLevel:
-              type: string
-              enum:
-              - L
-              - M
-              - Q
-              - H
-    Error:
-      type: object
-      properties:
-        success:
-          type: boolean
-          default: false
-        error:
-          type: string
-    GenerateVerifiedQrFailureResponse:
-      type: object
-      required:
-      - success
-      - error
-      - verification
-      properties:
-        success:
-          type: boolean
-          enum:
-          - false
-        error:
-          type: string
-          description: Explains that no asset was returned because final-file decoding did not match the requested payload.
-        verification:
-          allOf:
-          - $ref: '#/components/schemas/QrVerificationReceipt'
-          - type: object
-            properties:
-              status:
-                type: string
-                enum:
-                - not_detected
-                - mismatch
-    QrSafePayloadReview:
-      type: object
-      required:
-      - kind
-      - level
-      - displayHost
-      - protocol
-      - warnings
-      properties:
-        kind:
-          type: string
-          enum:
-          - url
-          - email
-          - phone
-          - sms
-          - wifi
-          - vcard
-          - event
-          - location
-          - payment
-          - text
-        level:
-          type: string
-          enum:
-          - clear
-          - caution
-          - blocked
-        displayHost:
-          type:
-          - string
-          - 'null'
-        protocol:
-          type:
-          - string
-          - 'null'
-          enum:
-          - 'http:'
-          - 'https:'
-        warnings:
-          type: array
-          description: Namespaced structural warning codes. No decoded payload content is included.
-          items:
-            type: string
-    QrProductionChecks:
-      type: object
-      required:
-      - quietZone
-      - contrast
-      - errorCorrection
-      properties:
-        quietZone:
-          type: object
-          required:
-          - margin
-          - recommendedMinimum
-          - passed
-          properties:
-            margin:
-              type: integer
-            recommendedMinimum:
-              type: integer
-              enum:
-              - 4
-            passed:
-              type: boolean
-        contrast:
-          type: object
-          required:
-          - ratio
-          - workflowThreshold
-          - foregroundDarker
-          - passed
-          properties:
-            ratio:
-              type: number
-            workflowThreshold:
-              type: number
-              enum:
-              - 4.5
-            foregroundDarker:
-              type: boolean
-            passed:
-              type: boolean
-        errorCorrection:
-          type: object
-          required:
-          - level
-          - logoPresent
-          - passed
-          properties:
-            level:
-              type: string
-              enum:
-              - L
-              - M
-              - Q
-              - H
-            logoPresent:
-              type: boolean
-            passed:
-              type: boolean
-              description: Passes when no logo is present or a logo uses H error correction.
-    GeneratedAssetDimensions:
-      type: object
-      description: Rendered asset dimensions. Raster and SVG assets use pixels; PDF and EPS use points.
-      required:
-      - width
-      - height
-      - unit
-      properties:
-        width:
-          type: number
-          example: 1024
-        height:
-          type: number
-          example: 1024
-        unit:
-          type: string
-          enum:
-          - px
-          - pt
-          example: px
     GenerateQrRequest:
       type: object
       required:
@@ -1723,7 +1297,7 @@ components:
           maxLength: 1500000
           pattern: ^data:image\/(png|jpe?g|webp);base64,.+
           description: Optional base64 data URL for a logo (PNG, JPG, or WEBP) to composite at the center. Files larger than 1MB are rejected.
-    GenerateQrResponse:
+    GenerateBulkQrResponse:
       type: object
       properties:
         success:
@@ -1731,40 +1305,53 @@ components:
           example: true
         data:
           type: string
-          description: Base64 encoded asset bytes
+          description: Base64 encoded ZIP archive containing QR files plus manifest.csv and manifest.json
         dataUrl:
           type: string
-          description: Ready-to-embed data URL built from contentType and base64 data
-          example: data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...
-        downloadUrl:
-          type: string
-          description: Relative GET URL for retrieving the generated asset without embedding base64 bytes. Emitted only for no-logo public HTTP(S) URL payloads that do not include obvious credential-style query parameters.
-          example: /.netlify/functions/generate-qr?value=https%3A%2F%2Fexample.com&format=svg&size=1024
+          description: Ready-to-download ZIP data URL
+          example: data:application/zip;base64,UEsDB...
         contentType:
           type: string
-          example: image/png
+          example: application/zip
         extension:
           type: string
-          example: png
+          example: zip
         suggestedFilename:
           type: string
-          example: qrcode-example
+          example: qrcodecrafter-bulk-svg.zip
         byteLength:
           type: integer
-          description: Exact number of decoded bytes in the base64 data field
-          example: 5342
-        dimensions:
-          $ref: '#/components/schemas/GeneratedAssetDimensions'
+          description: Exact ZIP byte length
+        fileCount:
+          type: integer
+          description: Number of generated QR files in the ZIP
+        failedCount:
+          type: integer
+          description: Number of rows recorded as failed in the manifest
+        manifest:
+          type: array
+          items:
+            $ref: '#/components/schemas/BulkQrManifestRow'
         qrOptions:
           type: object
-          description: Normalized QR options used to generate the asset
           properties:
+            format:
+              type: string
+              enum:
+              - svg
+              - png
+              - jpg
+              - webp
+              - pdf
+              - eps
             size:
               type: integer
-              example: 1024
             margin:
               type: integer
-              example: 4
+            fgColor:
+              type: string
+            bgColor:
+              type: string
             errorCorrectionLevel:
               type: string
               enum:
@@ -1772,7 +1359,104 @@ components:
               - M
               - Q
               - H
-              example: H
+    GenerateBulkQrRequest:
+      type: object
+      required:
+      - rows
+      properties:
+        rows:
+          description: Up to 50 QR payload rows. Provide either a CSV string with headers such as filename,value or an array of row objects with value and optional filename fields.
+          oneOf:
+          - type: string
+            maxLength: 220000
+          - type: array
+            minItems: 1
+            maxItems: 50
+            items:
+              $ref: '#/components/schemas/GenerateBulkQrRow'
+        format:
+          type: string
+          description: Shared output format for every generated QR file in the ZIP
+          enum:
+          - svg
+          - png
+          - jpg
+          - webp
+          - pdf
+          - eps
+          default: svg
+        size:
+          type: integer
+          minimum: 256
+          maximum: 4096
+          default: 1024
+          description: Pixel width/height for SVG and raster assets, point size for EPS/PDF QR artwork
+        margin:
+          type: integer
+          minimum: 0
+          maximum: 16
+          default: 4
+          description: Quiet-zone margin around every QR code
+        fgColor:
+          type: string
+          pattern: ^#?[0-9a-fA-F]{6}$
+          default: '#111111'
+          description: Shared foreground color
+        bgColor:
+          type: string
+          pattern: ^#?[0-9a-fA-F]{6}$
+          default: '#ffffff'
+          description: Shared background color
+        errorCorrectionLevel:
+          type: string
+          enum:
+          - L
+          - M
+          - Q
+          - H
+          default: H
+          description: Shared QR error correction level
+      x-agent-rate-limit:
+        model: cost-weighted per client
+        maxRows: 50
+        defaultBudgetUnits: 180
+        authenticatedBudgetUnits: 600
+        formatCosts:
+          svg: 1
+          png: 3
+          jpg: 4
+          webp: 4
+          pdf: 6
+          eps: 3
+        guidance: Prefer SVG for large batches, split PDF/WebP/JPG batches, and request application/zip when a direct ZIP download is preferred over base64 JSON.
+    GeneratedAssetDimensions:
+      type: object
+      description: Rendered asset dimensions. Raster and SVG assets use pixels; PDF and EPS use points.
+      required:
+      - width
+      - height
+      - unit
+      properties:
+        width:
+          type: number
+          example: 1024
+        height:
+          type: number
+          example: 1024
+        unit:
+          type: string
+          enum:
+          - px
+          - pt
+          example: px
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          default: false
+        error:
+          type: string
     GenerateVerifiedQrBlockedResponse:
       type: object
       required:
@@ -1828,6 +1512,322 @@ components:
           - private-network URL
           - URL control characters
           payloadRetention: Request payload is not retained; receipts contain hashes and warning codes rather than decoded payload content.
+    GenerateVerifiedQrFailureResponse:
+      type: object
+      required:
+      - success
+      - error
+      - verification
+      properties:
+        success:
+          type: boolean
+          enum:
+          - false
+        error:
+          type: string
+          description: Explains that no asset was returned because final-file decoding did not match the requested payload.
+        verification:
+          allOf:
+          - $ref: '#/components/schemas/QrVerificationReceipt'
+          - type: object
+            properties:
+              status:
+                type: string
+                enum:
+                - not_detected
+                - mismatch
+    GenerateQrResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: string
+          description: Base64 encoded asset bytes
+        dataUrl:
+          type: string
+          description: Ready-to-embed data URL built from contentType and base64 data
+          example: data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...
+        downloadUrl:
+          type: string
+          description: Relative GET URL for retrieving the generated asset without embedding base64 bytes. Emitted only for no-logo public HTTP(S) URL payloads that do not include obvious credential-style query parameters.
+          example: /.netlify/functions/generate-qr?value=https%3A%2F%2Fexample.com&format=svg&size=1024
+        contentType:
+          type: string
+          example: image/png
+        extension:
+          type: string
+          example: png
+        suggestedFilename:
+          type: string
+          example: qrcode-example
+        byteLength:
+          type: integer
+          description: Exact number of decoded bytes in the base64 data field
+          example: 5342
+        dimensions:
+          $ref: '#/components/schemas/GeneratedAssetDimensions'
+        qrOptions:
+          type: object
+          description: Normalized QR options used to generate the asset
+          properties:
+            size:
+              type: integer
+              example: 1024
+            margin:
+              type: integer
+              example: 4
+            errorCorrectionLevel:
+              type: string
+              enum:
+              - L
+              - M
+              - Q
+              - H
+              example: H
+    QrProductionChecks:
+      type: object
+      required:
+      - quietZone
+      - contrast
+      - errorCorrection
+      properties:
+        quietZone:
+          type: object
+          required:
+          - margin
+          - recommendedMinimum
+          - passed
+          properties:
+            margin:
+              type: integer
+            recommendedMinimum:
+              type: integer
+              enum:
+              - 4
+            passed:
+              type: boolean
+        contrast:
+          type: object
+          required:
+          - ratio
+          - workflowThreshold
+          - foregroundDarker
+          - passed
+          properties:
+            ratio:
+              type: number
+            workflowThreshold:
+              type: number
+              enum:
+              - 4.5
+            foregroundDarker:
+              type: boolean
+            passed:
+              type: boolean
+        errorCorrection:
+          type: object
+          required:
+          - level
+          - logoPresent
+          - passed
+          properties:
+            level:
+              type: string
+              enum:
+              - L
+              - M
+              - Q
+              - H
+            logoPresent:
+              type: boolean
+            passed:
+              type: boolean
+              description: Passes when no logo is present or a logo uses H error correction.
+    QrVerificationReceipt:
+      type: object
+      required:
+      - version
+      - status
+      - productionReady
+      - verifiedAt
+      - payload
+      - decode
+      - productionChecks
+      - cautions
+      - evidence
+      - limitation
+      properties:
+        version:
+          type: string
+          enum:
+          - '1.0'
+        status:
+          type: string
+          enum:
+          - verified
+          - verified_with_cautions
+          - not_detected
+          - mismatch
+        productionReady:
+          type: boolean
+          description: True only when the final asset decodes to the requested payload and every bounded workflow check passes without caution.
+        verifiedAt:
+          type: string
+          format: date-time
+        payload:
+          $ref: '#/components/schemas/QrSafePayloadReview'
+        decode:
+          type: object
+          required:
+          - decoder
+          - status
+          - requestedPayloadSha256
+          - payloadHashMatch
+          properties:
+            decoder:
+              type: string
+              enum:
+              - jsQR 1.4.0
+            status:
+              type: string
+              enum:
+              - exact_match
+              - normalized_match
+              - not_detected
+              - mismatch
+            requestedPayloadSha256:
+              type: string
+              pattern: ^[a-f0-9]{64}$
+            decodedPayloadSha256:
+              type:
+              - string
+              - 'null'
+              pattern: ^[a-f0-9]{64}$
+            payloadHashMatch:
+              type: boolean
+        productionChecks:
+          $ref: '#/components/schemas/QrProductionChecks'
+        cautions:
+          type: array
+          items:
+            type: string
+        evidence:
+          type: object
+          required:
+          - readabilityLab
+          - methodology
+          - release
+          properties:
+            readabilityLab:
+              type: string
+              format: uri
+            methodology:
+              type: string
+              format: uri
+            release:
+              type: string
+              format: uri
+        limitation:
+          type: string
+          description: Explicitly states that one software decoder and rendering pipeline do not provide print, device, ISO, accessibility, malware, or security certification.
+    QrSafePayloadReview:
+      type: object
+      required:
+      - kind
+      - level
+      - displayHost
+      - protocol
+      - warnings
+      properties:
+        kind:
+          type: string
+          enum:
+          - url
+          - email
+          - phone
+          - sms
+          - wifi
+          - vcard
+          - event
+          - location
+          - payment
+          - text
+        level:
+          type: string
+          enum:
+          - clear
+          - caution
+          - blocked
+        displayHost:
+          type:
+          - string
+          - 'null'
+        protocol:
+          type:
+          - string
+          - 'null'
+          enum:
+          - 'http:'
+          - 'https:'
+        warnings:
+          type: array
+          description: Namespaced structural warning codes. No decoded payload content is included.
+          items:
+            type: string
+    BulkQrManifestRow:
+      type: object
+      properties:
+        filename:
+          type: string
+          example: homepage.svg
+        value:
+          type: string
+          example: https://example.com
+        format:
+          type: string
+          enum:
+          - svg
+          - png
+          - jpg
+          - webp
+          - pdf
+          - eps
+        status:
+          type: string
+          enum:
+          - generated
+          - failed
+        bytes:
+          type:
+          - integer
+          - 'null'
+        message:
+          type: string
+    GenerateVerifiedQrResponse:
+      allOf:
+      - $ref: '#/components/schemas/GenerateQrResponse'
+      - type: object
+        required:
+        - success
+        - assetSha256
+        - verification
+        properties:
+          assetSha256:
+            type: string
+            pattern: ^[a-f0-9]{64}$
+            description: SHA-256 hash of the final generated asset bytes.
+          verification:
+            allOf:
+            - $ref: '#/components/schemas/QrVerificationReceipt'
+            - type: object
+              properties:
+                status:
+                  type: string
+                  enum:
+                  - verified
+                  - verified_with_cautions
   securitySchemes:
     AgentApiKey:
       type: apiKey

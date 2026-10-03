@@ -227,32 +227,38 @@ paths:
       tags:
       - Dynamic QR
 components:
-  parameters:
-    IfMatch:
-      name: If-Match
-      in: header
-      required: true
-      description: Exact value returned by X-Dynamic-QR-Version, or the ETag when no intermediary has rewritten it
-      schema:
-        type: string
-        maxLength: 256
-    DynamicQrSlug:
-      name: slug
-      in: path
-      required: true
-      description: 22-character dynamic QR identifier
-      schema:
-        type: string
-        pattern: ^[A-Za-z0-9_-]{22}$
-    DynamicQrVersionMatch:
-      name: X-Dynamic-QR-Version
-      in: header
-      required: false
-      description: Stable mirror of If-Match for intermediaries that rewrite or remove standard conditional headers
-      schema:
-        type: string
-        maxLength: 256
   schemas:
+    DynamicQrManageResponse:
+      type: object
+      required:
+      - success
+      - record
+      - redirectUrl
+      properties:
+        success:
+          type: boolean
+        record:
+          $ref: '#/components/schemas/DynamicQrRecord'
+        redirectUrl:
+          type: string
+          format: uri
+        analytics:
+          $ref: '#/components/schemas/DynamicQrAnalyticsSummary'
+    DynamicQrCreateRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - destination
+      properties:
+        destination:
+          type: string
+          format: uri
+          pattern: ^https://
+          maxLength: 2048
+          description: Public HTTPS destination. Private, local, reserved, and credential-bearing URLs are rejected.
+        label:
+          type: string
+          maxLength: 80
     DynamicQrRecord:
       type: object
       required:
@@ -286,54 +292,6 @@ components:
         updatedAt:
           type: string
           format: date-time
-    DynamicQrUpdateRequest:
-      type: object
-      additionalProperties: false
-      minProperties: 1
-      properties:
-        destination:
-          type: string
-          format: uri
-          pattern: ^https://
-          maxLength: 2048
-        label:
-          type: string
-          maxLength: 80
-        status:
-          type: string
-          enum:
-          - active
-          - paused
-        rotateToken:
-          type: boolean
-          description: Replace the bearer capability and return the new token once in the response.
-    DynamicQrCreateRequest:
-      type: object
-      additionalProperties: false
-      required:
-      - destination
-      properties:
-        destination:
-          type: string
-          format: uri
-          pattern: ^https://
-          maxLength: 2048
-          description: Public HTTPS destination. Private, local, reserved, and credential-bearing URLs are rejected.
-        label:
-          type: string
-          maxLength: 80
-    DynamicQrUpdateResponse:
-      allOf:
-      - $ref: '#/components/schemas/DynamicQrManageResponse'
-      - type: object
-        properties:
-          managementToken:
-            type: string
-            pattern: ^[A-Za-z0-9_-]{43}$
-            description: Present only when rotateToken is true; store it because it is not returned again.
-          managementUrl:
-            type: string
-            format: uri
     DynamicQrAnalyticsSummary:
       type: object
       description: Enabled on the production deployment. The analytics property remains optional so non-production or deliberately disabled deployments can omit it.
@@ -391,22 +349,18 @@ components:
           default: false
         error:
           type: string
-    DynamicQrManageResponse:
-      type: object
-      required:
-      - success
-      - record
-      - redirectUrl
-      properties:
-        success:
-          type: boolean
-        record:
-          $ref: '#/components/schemas/DynamicQrRecord'
-        redirectUrl:
-          type: string
-          format: uri
-        analytics:
-          $ref: '#/components/schemas/DynamicQrAnalyticsSummary'
+    DynamicQrUpdateResponse:
+      allOf:
+      - $ref: '#/components/schemas/DynamicQrManageResponse'
+      - type: object
+        properties:
+          managementToken:
+            type: string
+            pattern: ^[A-Za-z0-9_-]{43}$
+            description: Present only when rotateToken is true; store it because it is not returned again.
+          managementUrl:
+            type: string
+            format: uri
     DynamicQrCreateResponse:
       type: object
       required:
@@ -431,6 +385,52 @@ components:
         managementUrl:
           type: string
           format: uri
+    DynamicQrUpdateRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        destination:
+          type: string
+          format: uri
+          pattern: ^https://
+          maxLength: 2048
+        label:
+          type: string
+          maxLength: 80
+        status:
+          type: string
+          enum:
+          - active
+          - paused
+        rotateToken:
+          type: boolean
+          description: Replace the bearer capability and return the new token once in the response.
+  parameters:
+    DynamicQrVersionMatch:
+      name: X-Dynamic-QR-Version
+      in: header
+      required: false
+      description: Stable mirror of If-Match for intermediaries that rewrite or remove standard conditional headers
+      schema:
+        type: string
+        maxLength: 256
+    DynamicQrSlug:
+      name: slug
+      in: path
+      required: true
+      description: 22-character dynamic QR identifier
+      schema:
+        type: string
+        pattern: ^[A-Za-z0-9_-]{22}$
+    IfMatch:
+      name: If-Match
+      in: header
+      required: true
+      description: Exact value returned by X-Dynamic-QR-Version, or the ETag when no intermediary has rewritten it
+      schema:
+        type: string
+        maxLength: 256
   headers:
     DynamicQrVersion:
       description: Stable record version validator mirrored separately because some development proxies rewrite ETag
