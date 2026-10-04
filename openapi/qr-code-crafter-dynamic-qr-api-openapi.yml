@@ -228,22 +228,14 @@ paths:
       - Dynamic QR
 components:
   schemas:
-    DynamicQrManageResponse:
+    Error:
       type: object
-      required:
-      - success
-      - record
-      - redirectUrl
       properties:
         success:
           type: boolean
-        record:
-          $ref: '#/components/schemas/DynamicQrRecord'
-        redirectUrl:
+          default: false
+        error:
           type: string
-          format: uri
-        analytics:
-          $ref: '#/components/schemas/DynamicQrAnalyticsSummary'
     DynamicQrCreateRequest:
       type: object
       additionalProperties: false
@@ -259,39 +251,6 @@ components:
         label:
           type: string
           maxLength: 80
-    DynamicQrRecord:
-      type: object
-      required:
-      - slug
-      - destination
-      - label
-      - status
-      - version
-      - createdAt
-      - updatedAt
-      properties:
-        slug:
-          type: string
-          pattern: ^[A-Za-z0-9_-]{22}$
-        destination:
-          type: string
-          format: uri
-        label:
-          type: string
-        status:
-          type: string
-          enum:
-          - active
-          - paused
-        version:
-          type: integer
-          minimum: 1
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
     DynamicQrAnalyticsSummary:
       type: object
       description: Enabled on the production deployment. The analytics property remains optional so non-production or deliberately disabled deployments can omit it.
@@ -341,14 +300,39 @@ components:
         lastCountedAt:
           type: string
           format: date-time
-    Error:
+    DynamicQrRecord:
       type: object
+      required:
+      - slug
+      - destination
+      - label
+      - status
+      - version
+      - createdAt
+      - updatedAt
       properties:
-        success:
-          type: boolean
-          default: false
-        error:
+        slug:
           type: string
+          pattern: ^[A-Za-z0-9_-]{22}$
+        destination:
+          type: string
+          format: uri
+        label:
+          type: string
+        status:
+          type: string
+          enum:
+          - active
+          - paused
+        version:
+          type: integer
+          minimum: 1
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
     DynamicQrUpdateResponse:
       allOf:
       - $ref: '#/components/schemas/DynamicQrManageResponse'
@@ -385,6 +369,22 @@ components:
         managementUrl:
           type: string
           format: uri
+    DynamicQrManageResponse:
+      type: object
+      required:
+      - success
+      - record
+      - redirectUrl
+      properties:
+        success:
+          type: boolean
+        record:
+          $ref: '#/components/schemas/DynamicQrRecord'
+        redirectUrl:
+          type: string
+          format: uri
+        analytics:
+          $ref: '#/components/schemas/DynamicQrAnalyticsSummary'
     DynamicQrUpdateRequest:
       type: object
       additionalProperties: false
@@ -415,14 +415,6 @@ components:
       schema:
         type: string
         maxLength: 256
-    DynamicQrSlug:
-      name: slug
-      in: path
-      required: true
-      description: 22-character dynamic QR identifier
-      schema:
-        type: string
-        pattern: ^[A-Za-z0-9_-]{22}$
     IfMatch:
       name: If-Match
       in: header
@@ -431,6 +423,14 @@ components:
       schema:
         type: string
         maxLength: 256
+    DynamicQrSlug:
+      name: slug
+      in: path
+      required: true
+      description: 22-character dynamic QR identifier
+      schema:
+        type: string
+        pattern: ^[A-Za-z0-9_-]{22}$
   headers:
     DynamicQrVersion:
       description: Stable record version validator mirrored separately because some development proxies rewrite ETag
