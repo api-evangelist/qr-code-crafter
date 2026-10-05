@@ -1,0 +1,12 @@
+{
+ "url": "https://qrcodecrafter.com/.well-known/openapi.json",
+ "requested_url": "https://qrcodecrafter.com/.well-known/openapi.json",
+ "status": 200,
+ "content_type": "application/json",
+ "bytes": 119519,
+ "sha256": "bb1a6559fa5dae115c87869df2c3b7f0b3dd18fe314dc86fb40b4748d5a68196",
+ "fetched_at": "2026-10-04",
+ "fetched_by": "APIEvangelist-Harvest/1.0 (+https://apievangelist.com)",
+ "match": "byte-identical",
+ "note": "Re-fetched from the provider by verify-openapi-sources.py; the archived file is byte-identical to what the provider serves."
+}
