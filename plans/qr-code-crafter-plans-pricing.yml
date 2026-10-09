@@ -55,3 +55,16 @@ x-evidence:
   - url: https://qrcodecrafter.com/qr-code-api-pricing
     http_status: 200
     fetched: '2026-08-11'
+x-canonical:
+  generated: '2026-10-08'
+  vocabulary: all/0-working/economics/plans-canonical.yml
+  models:
+  - metered
+  units: []
+  plans:
+  - name: Free public API
+    access: other
+    model: metered
+    model_how: derived
+    units: []
+    periods: []
