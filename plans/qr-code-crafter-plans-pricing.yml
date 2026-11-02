@@ -1,0 +1,43 @@
+# Pricing transcribed from the provider's own page — see provenance. Numbers are quoted, not derived.
+generated: '2026-10-28'
+method: searched
+source: https://qrcodecrafter.com/qr-code-api-pricing
+sources:
+- https://qrcodecrafter.com/qr-code-api-pricing
+provenance:
+  tool: engine/economics/harvest_pricing.py
+  run: 20261028T161713
+  grounding: every price_text was found verbatim in the fetched page text
+audience: developer-api
+pricing_basis: free
+delivery:
+  delivery: managed
+  method: page
+  read: '2026-10-28'
+published: false
+note: No numeric price is published on the pricing page; Page states the public static QR API is free
+  with no subscription; no numeric prices given, only cost-weighted rate limits.
+plan_count: 1
+plans:
+- name: Free public static QR API
+  price_text: Free public API for SVG, PNG, JPG, WebP, PDF, and EPS output.
+  period: none
+  included_quota: Bulk ZIP batches up to 50 rows per request; no account or API key required
+rate_limit_statements:
+- The API is rate limited by estimated rendering cost rather than by a paid seat plan.
+- Use /.netlify/functions/generate-qr-bulk for ZIP batches up to 50 rows
+- Agents and integrations should honor HTTP 429 or 503 responses, read Retry-After, and watch X-RateLimit-Limit
+  and X-RateLimit-Remaining headers.
+x-canonical:
+  generated: '2026-11-01'
+  vocabulary: engine/economics/plans-canonical.yml
+  models: []
+  units: []
+  plans:
+  - name: Free public static QR API
+    access: other
+    model: unstated
+    model_how: derived
+    units: []
+    periods:
+    - none
