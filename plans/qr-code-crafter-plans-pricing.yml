@@ -29,7 +29,7 @@ rate_limit_statements:
 - Agents and integrations should honor HTTP 429 or 503 responses, read Retry-After, and watch X-RateLimit-Limit
   and X-RateLimit-Remaining headers.
 x-canonical:
-  generated: '2026-11-01'
+  generated: '2026-11-02'
   vocabulary: engine/economics/plans-canonical.yml
   models: []
   units: []

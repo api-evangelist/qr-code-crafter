@@ -41,7 +41,7 @@ artifacts:
   kin/checks-2026-10-23T222754.yml:
     method: generated
     evidence: Kin Score snapshot written by score.rb
-  kin/checks-2026-10-31T095417.yml:
+  kin/checks-2026-11-02T082323.yml:
     method: generated
     evidence: Kin Score snapshot written by score.rb
   kin/score-2026-09-23T000603.yml:
@@ -98,6 +98,15 @@ artifacts:
   kin/score-2026-10-31T095417.yml:
     method: generated
     evidence: Kin Score snapshot written by score.rb
+  kin/score-2026-11-01T171331.yml:
+    method: generated
+    evidence: Kin Score snapshot written by score.rb
+  kin/score-2026-11-01T200237.yml:
+    method: generated
+    evidence: Kin Score snapshot written by score.rb
+  kin/score-2026-11-02T082323.yml:
+    method: generated
+    evidence: Kin Score snapshot written by score.rb
   lifecycle/qr-code-crafter-lifecycle.yml:
     method: searched
     evidence: declared in the artifact
@@ -138,11 +147,17 @@ artifacts:
   packages/qr-code-crafter-packages.yml:
     method: searched
     evidence: declared in the artifact
+  patterns/qr-code-crafter-patterns.yml:
+    method: derived
+    evidence: declared in the artifact
   plans/qr-code-crafter-plans-pricing.yml:
     method: searched
     evidence: declared in the artifact
   rate-limits/qr-code-crafter-rate-limits.yml:
     method: searched
+    evidence: declared in the artifact
+  rules/qr-code-crafter-rules.yml:
+    method: generated
     evidence: declared in the artifact
   sandbox/qr-code-crafter-sandbox.yml:
     method: searched
@@ -163,6 +178,9 @@ artifacts:
     method: generated
     evidence: declared in the artifact
   skills/qr-code-crafter-manage-dynamic-qr.md:
+    method: generated
+    evidence: declared in the artifact
+  sla/qr-code-crafter-sla.yml:
     method: generated
     evidence: declared in the artifact
   well-known/qr-code-crafter-ai-plugin.json:
