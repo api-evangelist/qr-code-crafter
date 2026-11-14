@@ -38,7 +38,7 @@ accessModel:
   - rate-limits
   - security
   - sandbox
-  generated: '2026-11-06'
+  generated: '2026-11-13'
   method: derived
 image: https://qrcodecrafter.com/icons/icon-512x512.png
 created: '2026-07-24'
@@ -249,6 +249,16 @@ common:
     url: security/qr-code-crafter-domain-security.yml
   - type: APIsJSON
     url: https://qrcodecrafter.com/apis.json
+  - type: UsageTerms
+    url: terms/qr-code-crafter-terms-of-service.yml
+  - type: DataProcessing
+    url: privacy/qr-code-crafter-privacy-policy.yml
+  - type: Eligibility
+    url: eligibility/qr-code-crafter-eligibility.yml
+  - type: AIPreferences
+    url: ai-preferences/qr-code-crafter-ai-preferences.yml
+  - type: DataLicense
+    url: data-license/qr-code-crafter-data-license.yml
 maintainers:
   - FN: QR Code Crafter Agent Support
     email: support@qrcodecrafter.com
