@@ -1,3 +1,4 @@
+aid: qr-code-crafter
 name: QR Code Crafter
 description: >-
   Public QR code generation API by Brand Aspect Ltd (England & Wales, company 05105266) supporting 27 payload types —
@@ -38,7 +39,7 @@ accessModel:
   - rate-limits
   - security
   - sandbox
-  generated: '2026-11-13'
+  generated: '2026-11-20'
   method: derived
 image: https://qrcodecrafter.com/icons/icon-512x512.png
 created: '2026-07-24'
